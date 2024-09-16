@@ -1,0 +1,5 @@
+displayName = CaiBot扩展插件
+author = Cai
+version = 2024.7.1.0
+dllReferences=SixLabors.ImageSharp,Newtonsoft.Json
+buildIgnore = *.csproj, *.user, obj\*, bin\*, .vs\*, Old\*
