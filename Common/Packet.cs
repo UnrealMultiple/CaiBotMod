@@ -1,7 +1,7 @@
 ﻿using Terraria.ModLoader;
 using tModPorter;
 using Terraria;
-using CaiBot扩展.Common;
+using CaiBotMod.Common;
 using System;
 using System.Threading.Tasks;
 using MonoMod.RuntimeDetour;
@@ -25,7 +25,7 @@ using System.Text.RegularExpressions;
 using System.Collections;
 using Terraria.Localization;
 
-namespace CaiBot扩展.Common
+namespace CaiBotMod.Common
 {
     public class Packet : ModSystem
     {
@@ -112,13 +112,13 @@ namespace CaiBot扩展.Common
                         var direction = (byte)(reader.ReadByte() - 1);
                         BitsByte bits = (BitsByte)reader.ReadByte();
                         bool pvp = bits[0];
-                        if (CaiBot扩展.PlayerDeath.ContainsKey(Main.player[playerNumber].name))
+                        if (CaiBotMod.PlayerDeath.ContainsKey(Main.player[playerNumber].name))
                         {
-                            CaiBot扩展.PlayerDeath[Main.player[playerNumber].name] = new System.Drawing.Point((int)Main.player[playerNumber].position.X, (int)Main.player[playerNumber].position.Y);
+                            CaiBotMod.PlayerDeath[Main.player[playerNumber].name] = new System.Drawing.Point((int)Main.player[playerNumber].position.X, (int)Main.player[playerNumber].position.Y);
                         }
                         else
                         {
-                            CaiBot扩展.PlayerDeath.Add(Main.player[playerNumber].name, new System.Drawing.Point((int)Main.player[playerNumber].position.X, (int)Main.player[playerNumber].position.Y));
+                            CaiBotMod.PlayerDeath.Add(Main.player[playerNumber].name, new System.Drawing.Point((int)Main.player[playerNumber].position.X, (int)Main.player[playerNumber].position.Y));
                         }
                         break;
                     }
@@ -131,7 +131,7 @@ namespace CaiBot扩展.Common
                         }
                         string data = reader.ReadString();
                         string token = Guid.NewGuid().ToString();
-                        if (data == CaiBot扩展.code.ToString())
+                        if (data == CaiBotMod.code.ToString())
                         {
 
                             NetMessage.SendData(2, playerNumber, -1, NetworkText.FromFormattable(token));

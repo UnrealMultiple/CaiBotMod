@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CaiBot扩展.Common
+namespace CaiBotMod.Common
 {
 
     using System;

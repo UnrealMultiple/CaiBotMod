@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 using Terraria;
 
 
-namespace CaiBot扩展.Common
+namespace CaiBotMod.Common
 {
     public static class Login
     {

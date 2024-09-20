@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace CaiBot扩展.Common;
+namespace CaiBotMod.Common;
 
 [Serializable]
 public class RestObject : Dictionary<string, object>

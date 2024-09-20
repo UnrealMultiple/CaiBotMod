@@ -35,7 +35,7 @@ using Terraria.DataStructures;
 using Terraria.GameContent.Creative;
 using Terraria.ModLoader;
 
-namespace CaiBot扩展.Common
+namespace CaiBotMod.Common
 {
     public delegate void CommandDelegate(CommandArgs args);
 

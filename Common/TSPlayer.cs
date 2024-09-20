@@ -35,7 +35,7 @@ using System.Text.RegularExpressions;
 using Color = System.Drawing.Color;
 using Point = System.Drawing.Point;
 
-namespace CaiBot扩展.Common
+namespace CaiBotMod.Common
 {
     /// <summary>
     /// Bitflags used with the <see cref="Disable(string, DisableFlags)"></see> method
@@ -102,7 +102,7 @@ namespace CaiBot扩展.Common
             byte searchID;
             if (byte.TryParse(search, out searchID) && searchID < Main.maxPlayers)
             {
-                TSPlayer player = CaiBot扩展.Players[searchID];
+                TSPlayer player = CaiBotMod.Players[searchID];
                 if (player != null && player.Active)
                 {
                     if (exactIndexOnly)
@@ -112,7 +112,7 @@ namespace CaiBot扩展.Common
             }
 
             string searchLower = search.ToLower();
-            foreach (TSPlayer player in CaiBot扩展.Players)
+            foreach (TSPlayer player in CaiBotMod.Players)
             {
                 if (player != null)
                 {

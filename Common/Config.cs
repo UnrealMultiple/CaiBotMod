@@ -3,7 +3,7 @@ using System.Drawing;
 using System.IO;
 using Newtonsoft.Json;
 
-namespace CaiBot扩展.Common
+namespace CaiBotMod.Common
 {
     public class Config
     {

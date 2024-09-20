@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using CaiBot扩展.Common;
+using CaiBotMod.Common;
 using Microsoft.Xna.Framework;
 using Terraria;
 using Terraria.UI.Chat;
 
-namespace CaiBot扩展;
+namespace CaiBotMod;
   public class CaiBotPlayer : TSPlayer
     {
         internal List<string> CommandOutput = new List<string>();

@@ -1,7 +1,7 @@
 using Terraria.ModLoader;
 using tModPorter;
 using Terraria;
-using CaiBot扩展.Common;
+using CaiBotMod.Common;
 using System;
 using System.Threading.Tasks;
 using MonoMod.RuntimeDetour;
@@ -21,13 +21,13 @@ using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using Newtonsoft.Json.Linq;
-using Config = CaiBot扩展.Common.Config;
+using Config = CaiBotMod.Common.Config;
 using Terraria.Localization;
 
-namespace CaiBot扩展
+namespace CaiBotMod
 {
 
-    public class CaiBot扩展 : Mod
+    public class CaiBotMod : Mod
     {
 
         public static int ExampleCustomCurrencyId;
@@ -142,8 +142,7 @@ namespace CaiBot扩展
                 return;
             }
 
-            int pageNumber;
-            if (args.Parameters.Count == 0 || int.TryParse(args.Parameters[0], out pageNumber))
+            if (args.Parameters.Count == 0 || int.TryParse(args.Parameters[0], out int pageNumber))
             {
                 if (!PaginationTools.TryParsePageNumber(args.Parameters, 0, args.Player, out pageNumber))
                 {
@@ -164,12 +163,12 @@ namespace CaiBot扩展
             else
             {
                 string commandName = args.Parameters[0].ToLower();
-                if (commandName.StartsWith("/"))
+                if (commandName.StartsWith('/'))
                 {
                     commandName = commandName.Substring(1);
                 }
 
-                Command command = Commands.ChatCommands.Find(c => c.Names.Contains(commandName));
+                Command? command = Commands.ChatCommands.Find(c => c.Names.Contains(commandName));
                 if (command == null)
                 {
                     args.Player.SendErrorMessage("无效命令.");
@@ -190,7 +189,7 @@ namespace CaiBot扩展
         }
 
 
-        public void GenCode()
+        public static void GenCode()
         {
             if (Config.config.Token != "")
             {
@@ -207,12 +206,12 @@ namespace CaiBot扩展
                 args.Player.SendErrorMessage("[i:3457]你还没复活呢,不能回到出生点！");
                 return;
             }
-            if (!PlayerDeath.ContainsKey(args.Player.Name)) 
+            if (!PlayerDeath.TryGetValue(args.Player.Name, out Point value)) 
             {
                 args.Player.SendErrorMessage("[i:3457]你还没有去世过呢！");
                 return;
             }
-            args.Player.Teleport(PlayerDeath[args.Player.Name].X, PlayerDeath[args.Player.Name].Y);
+            args.Player.Teleport(value.X, value.Y);
             args.Player.SendSuccessMessage("[i:3457]你已经回到上一次死亡点啦！");
 
         }
@@ -284,7 +283,7 @@ namespace CaiBot扩展
                     matches = new List<NPC> { npc };
                     break;
                 }
-                if (npc.FullName.ToLowerInvariant().StartsWith(npcStr.ToLowerInvariant()))
+                if (npc.FullName.StartsWith(npcStr, StringComparison.InvariantCultureIgnoreCase))
                     matches.Add(npc);
             }
 
@@ -304,9 +303,9 @@ namespace CaiBot扩展
             args.Player.SendSuccessMessage("[i:267]已传送到'{0}'附近.", target.FullName);
         }
 
-        public void Kick(int Index, string reason)
+        public static void Kick(int Index, string reason)
         {
-            NetMessage.SendData(2, Index, -1, Terraria.Localization.NetworkText.FromLiteral(reason));
+            NetMessage.SendData(MessageID.Kick, Index, -1, Terraria.Localization.NetworkText.FromLiteral(reason));
         }
         public override void Unload()
         {

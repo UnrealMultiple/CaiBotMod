@@ -21,10 +21,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
-using CaiBot扩展.Common;
+using CaiBotMod.Common;
 using Color = System.Drawing.Color;
 
-namespace CaiBot扩展.Common
+namespace CaiBotMod.Common
 {
     /// <summary>
     /// Provides tools for sending paginated output.

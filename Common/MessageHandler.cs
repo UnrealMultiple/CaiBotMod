@@ -19,7 +19,7 @@ using System.Runtime.InteropServices;
 using Terraria.ModLoader;
 
 
-namespace CaiBot扩展.Common
+namespace CaiBotMod.Common
 {
 
     public class MessageHandle
@@ -29,7 +29,7 @@ namespace CaiBot扩展.Common
             if (Terraria.Program.LaunchParameters.ContainsKey("-caidebug"))
                Console.WriteLine($"[CaiAPI]发送BOT数据包：{message}");
             byte[] messageBytes = Encoding.UTF8.GetBytes(message);
-            await CaiBot扩展.ws.SendAsync(new ArraySegment<byte>(messageBytes), WebSocketMessageType.Text, true, CancellationToken.None);
+            await CaiBotMod.ws.SendAsync(new ArraySegment<byte>(messageBytes), WebSocketMessageType.Text, true, CancellationToken.None);
 
         }
 
@@ -37,7 +37,7 @@ namespace CaiBot扩展.Common
         {
             get
             {
-                return (CaiBot扩展.ws != null && CaiBot扩展.ws.State == WebSocketState.Open);
+                return (CaiBotMod.ws != null && CaiBotMod.ws.State == WebSocketState.Open);
             }
         }
 
@@ -78,8 +78,8 @@ namespace CaiBot扩展.Common
                     Config.config.Token = "";
                     Config.config.Write();
                     Random rnd = new Random();
-                    CaiBot扩展.code = rnd.Next(10000000, 99999999);
-                    Console.WriteLine($"[CaiBot]您的服务器绑定码为: {CaiBot扩展.code}");
+                    CaiBotMod.code = rnd.Next(10000000, 99999999);
+                    Console.WriteLine($"[CaiBot]您的服务器绑定码为: {CaiBotMod.code}");
                     break;
                 case "hello":
                     Console.WriteLine("[CaiAPI]CaiBOT连接成功...");

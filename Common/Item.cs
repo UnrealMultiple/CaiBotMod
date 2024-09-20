@@ -9,7 +9,7 @@ using Terraria.ID;
 using Terraria;
 using Terraria.ModLoader;
 
-namespace CaiBot扩展.Common
+namespace CaiBotMod.Common
 {
     internal class 法律鱼:ModItem
     {
