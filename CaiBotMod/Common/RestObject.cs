@@ -1,46 +1,38 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
-using Newtonsoft.Json;
 
 namespace CaiBotMod.Common;
 
 [Serializable]
 public class RestObject : Dictionary<string, object>
 {
+    public RestObject()
+    {
+        this.Status = "200";
+    }
+
+    public RestObject(string status = "200")
+    {
+        this.Status = status;
+    }
+
     public string Status
     {
-        get
-        {
-            return this["status"] as string;
-        }
-        set
-        {
-            this["status"] = value;
-        }
+        get => this["status"] as string;
+        set => this["status"] = value;
     }
 
     public string Error
     {
-        get
-        {
-            return this["error"] as string;
-        }
-        set
-        {
-            this["error"] = value;
-        }
+        get => this["error"] as string;
+        set => this["error"] = value;
     }
 
     public string Response
     {
-        get
-        {
-            return this["response"] as string;
-        }
-        set
-        {
-            this["response"] = value;
-        }
+        get => this["response"] as string;
+        set => this["response"] = value;
     }
 
     //
@@ -58,7 +50,7 @@ public class RestObject : Dictionary<string, object>
     {
         get
         {
-            if (TryGetValue(key, out var value))
+            if (this.TryGetValue(key, out var value))
             {
                 return value;
             }
@@ -67,11 +59,11 @@ public class RestObject : Dictionary<string, object>
         }
         set
         {
-            if (!ContainsKey(key))
+            if (!this.ContainsKey(key))
             {
                 if (value != null)
                 {
-                    Add(key, value);
+                    this.Add(key, value);
                 }
             }
             else if (value != null)
@@ -80,19 +72,9 @@ public class RestObject : Dictionary<string, object>
             }
             else
             {
-                Remove(key);
+                this.Remove(key);
             }
         }
-    }
-
-    public RestObject()
-    {
-        Status = "200";
-    }
-
-    public RestObject(string status = "200")
-    {
-        Status = status;
     }
 
     internal string ToJson()

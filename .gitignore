@@ -332,6 +332,8 @@ __pycache__/
 *.odx.cs
 *.xsd.cs
 
+tModLoader/
+
 # OpenCover UI analysis results
 OpenCover/
 
