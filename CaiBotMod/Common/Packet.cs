@@ -12,7 +12,7 @@ using Terraria.ID;
 
 namespace CaiBotMod.Common;
 
-public abstract class Packet : ModSystem
+public class Packet : ModSystem
 {
     public static string[] UUIDs = new string[256];
     public static bool[] Login = new bool[256];

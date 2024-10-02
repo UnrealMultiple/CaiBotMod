@@ -12,7 +12,7 @@ on:
 jobs:
   build:
 
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
     - uses: actions/checkout@v4
@@ -20,5 +20,29 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0.x
+
+    - name: Download TMODL
+      run: |
+        Invoke-WebRequest -Uri "https://github.com/tModLoader/tModLoader/releases/latest/download/tModLoader.zip" -OutFile "tModLoader.zip"
+        Expand-Archive -Path "tModLoader.zip" -DestinationPath "tModLoader"
+    
     - name: Build
-      run: dotnet build CaiBotMod.csproj --nologo
+      shell: bash
+      run: |
+        ModloaderDir=$(pwd)/local/ModLoader
+        echo ModloaderDir: $ModloaderDir
+        mkdir -p artifacts/Mods
+        mkdir -p $ModloaderDir
+        export ExtraBuildModFlags="-tmlsavedirectory \"$(cygpath -w $ModloaderDir)\""
+        echo ExtraBuildModFlags: $ExtraBuildModFlags
+        dotnet build CaiBotMod/CaiBotMod.csproj --nologo
+        cp -r $ModloaderDir/Mods/. artifacts/Mods/
+           
+    
+    - name: Upload MOD
+      uses: actions/upload-artifact@v4
+      with:
+        name: CaiBotMod
+        path: |
+          ./artifacts/Mods/CaiBotMod.tmod
+    

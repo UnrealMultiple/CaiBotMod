@@ -18,7 +18,7 @@ using Config = CaiBotMod.Common.Config;
 
 namespace CaiBotMod;
 
-public abstract class CaiBotMod : Mod
+public class CaiBotMod : Mod
 {
     public static int InitCode = -1;
     private static bool _showCode;
