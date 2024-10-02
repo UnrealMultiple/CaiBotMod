@@ -7,4 +7,13 @@ Mods: {
 			}
 		}
 	}
+
+	CaibotExtension: {
+		Items: {
+			法律鱼: {
+				DisplayName: 法律鱼
+				Tooltip: ""
+			}
+		}
+	}
 }

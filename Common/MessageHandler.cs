@@ -18,7 +18,7 @@ using Terraria;
 using Terraria.Map;
 using Terraria.ModLoader;
 
-namespace CaibotExtension.Common
+namespace CaiBotMod.Common
 {
 
     public class MessageHandle

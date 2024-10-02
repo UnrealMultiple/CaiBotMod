@@ -5,7 +5,7 @@ using Terraria.DataStructures;
 using Terraria.Localization;
 using Terraria.ModLoader;
 
-namespace CaibotExtension.Common
+namespace CaiBotMod.Common
 {
     public class Packet : ModSystem
     {

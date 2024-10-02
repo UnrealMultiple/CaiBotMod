@@ -34,7 +34,7 @@ using Timer = System.Timers.Timer;
 using Color = System.Drawing.Color;
 using Point = System.Drawing.Point;
 
-namespace CaibotExtension.Common
+namespace CaiBotMod.Common
 {
     /// <summary>
     /// Bitflags used with the <see cref="Disable(string, DisableFlags)"></see> method

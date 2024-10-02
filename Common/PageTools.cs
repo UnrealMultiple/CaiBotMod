@@ -22,7 +22,7 @@ using System.Collections.Generic;
 using System.Text;
 using Color = System.Drawing.Color;
 
-namespace CaibotExtension.Common
+namespace CaiBotMod.Common
 {
     /// <summary>
     /// Provides tools for sending paginated output.

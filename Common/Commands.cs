@@ -23,7 +23,7 @@ using System.Linq;
 using System.Text;
 using Terraria;
 
-namespace CaibotExtension.Common
+namespace CaiBotMod.Common
 {
     public delegate void CommandDelegate(CommandArgs args);
 

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace CaibotExtension.Common
+namespace CaiBotMod.Common
 {
     public static class Login
     {

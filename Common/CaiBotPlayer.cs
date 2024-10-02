@@ -5,7 +5,7 @@ using Microsoft.Xna.Framework;
 using Terraria;
 using Terraria.UI.Chat;
 
-namespace CaibotExtension.Common;
+namespace CaiBotMod.Common;
   public class CaiBotPlayer : TSPlayer
     {
         internal List<string> CommandOutput = new List<string>();

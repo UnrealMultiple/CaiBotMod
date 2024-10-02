@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using Newtonsoft.Json;
 
-namespace CaibotExtension.Common
+namespace CaiBotMod.Common
 {
     public class Config
     {
