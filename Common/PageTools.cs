@@ -16,15 +16,13 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Microsoft.Xna.Framework;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
-using CaiBotMod.Common;
 using Color = System.Drawing.Color;
 
-namespace CaiBotMod.Common
+namespace CaibotExtension.Common
 {
     /// <summary>
     /// Provides tools for sending paginated output.

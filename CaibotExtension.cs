@@ -1,30 +1,21 @@
-using Terraria.ModLoader;
-using tModPorter;
-using Terraria;
-using CaiBotMod.Common;
 using System;
-using System.Threading.Tasks;
-using MonoMod.RuntimeDetour;
-using MonoMod.Cil;
-using FullSerializer;
-using Newtonsoft.Json;
-using System.IO;
-using System.Net;
-using MonoMod.Utils;
-using Terraria.ID;
 using System.Collections.Generic;
-using System.Linq;
 using System.Drawing;
+using System.Linq;
+using System.Net;
 using System.Net.Http;
-using Humanizer;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
+using CaibotExtension.Common;
 using Newtonsoft.Json.Linq;
-using Config = CaiBotMod.Common.Config;
-using Terraria.Localization;
+using Terraria;
+using Terraria.ID;
+using Terraria.ModLoader;
+using Config = CaibotExtension.Common.Config;
 
-namespace CaiBotMod
+namespace CaibotExtension
 {
 
     public class CaiBotMod : Mod

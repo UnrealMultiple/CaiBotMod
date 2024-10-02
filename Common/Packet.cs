@@ -1,31 +1,11 @@
-﻿using Terraria.ModLoader;
-using tModPorter;
-using Terraria;
-using CaiBotMod.Common;
-using System;
-using System.Threading.Tasks;
-using MonoMod.RuntimeDetour;
-using MonoMod.Cil;
-using FullSerializer;
-using Newtonsoft.Json;
+﻿using System;
 using System.IO;
-using System.Net;
-using MonoMod.Utils;
-using Terraria.ID;
-using log4net.Repository.Hierarchy;
-using System.Threading;
-using Terraria.Net;
-using System.Reflection;
-using XPT.Core.Audio.MP3Sharp.Decoding;
+using Terraria;
 using Terraria.DataStructures;
-using System.Collections.Generic;
-using static log4net.Appender.ColoredConsoleAppender;
-using System.Diagnostics;
-using System.Text.RegularExpressions;
-using System.Collections;
 using Terraria.Localization;
+using Terraria.ModLoader;
 
-namespace CaiBotMod.Common
+namespace CaibotExtension.Common
 {
     public class Packet : ModSystem
     {

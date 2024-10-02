@@ -1,9 +1,7 @@
-﻿using System;
-using System.Drawing;
-using System.IO;
+﻿using System.IO;
 using Newtonsoft.Json;
 
-namespace CaiBotMod.Common
+namespace CaibotExtension.Common
 {
     public class Config
     {

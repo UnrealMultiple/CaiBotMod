@@ -7,19 +7,18 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.WebSockets;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using Terraria;
 using Terraria.Map;
-using Newtonsoft.Json.Linq;
-using System.Runtime.InteropServices;
 using Terraria.ModLoader;
 
-
-namespace CaiBotMod.Common
+namespace CaibotExtension.Common
 {
 
     public class MessageHandle

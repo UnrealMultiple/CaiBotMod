@@ -16,26 +16,14 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using Terraria;
-using Terraria.ID;
-using Terraria.Localization;
-using Terraria.GameContent.Events;
-using Microsoft.Xna.Framework;
-using System.Text.RegularExpressions;
-using Terraria.DataStructures;
-using Terraria.GameContent.Creative;
-using Terraria.ModLoader;
 
-namespace CaiBotMod.Common
+namespace CaibotExtension.Common
 {
     public delegate void CommandDelegate(CommandArgs args);
 

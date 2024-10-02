@@ -1,16 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Newtonsoft.Json;
+using Terraria;
 
-namespace CaiBotMod.Common
+namespace CaibotExtension.Common
 {
-
-    using System;
-    using Newtonsoft.Json;
-    using Terraria;
-
     [JsonObject(MemberSerialization.OptIn)]
     public struct NetItem
     {

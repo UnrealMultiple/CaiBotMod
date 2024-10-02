@@ -1,14 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
-using Terraria;
 
-
-namespace CaiBotMod.Common
+namespace CaibotExtension.Common
 {
     public static class Login
     {

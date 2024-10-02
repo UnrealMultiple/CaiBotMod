@@ -16,26 +16,25 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.IO;
+using System.Drawing;
+using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Timers;
+using Microsoft.Xna.Framework;
 using Terraria;
 using Terraria.DataStructures;
+using Terraria.GameContent.Creative;
 using Terraria.ID;
 using Terraria.Localization;
 using Timer = System.Timers.Timer;
-using System.Linq;
-using Terraria.GameContent.Creative;
-using System.Drawing;
-using System.Text.RegularExpressions;
 using Color = System.Drawing.Color;
 using Point = System.Drawing.Point;
 
-namespace CaiBotMod.Common
+namespace CaibotExtension.Common
 {
     /// <summary>
     /// Bitflags used with the <see cref="Disable(string, DisableFlags)"></see> method

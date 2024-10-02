@@ -1,4 +1,4 @@
-﻿using System;
+﻿namespace CaibotExtension.Common;
 
 public enum PacketTypes
 {

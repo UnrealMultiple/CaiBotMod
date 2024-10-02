@@ -12,6 +12,9 @@
 	    <HintPath>..\..\..\..\..\..\source\repos\TShockPlugin\lib\SixLabors.ImageSharp.dll</HintPath>
 	  </Reference>
 	</ItemGroup>
+	<ItemGroup>
+	  <Folder Include="Localization\" />
+	</ItemGroup>
 
 	<!-- References -->
 
