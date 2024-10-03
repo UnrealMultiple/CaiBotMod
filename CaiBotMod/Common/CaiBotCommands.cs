@@ -12,7 +12,7 @@ public class BindCodeCommand : ModCommand
 
     public override string Usage
         => "/生成绑定码" +
-           "\n生成一个CaiBot绑定码.";
+           "    生成一个CaiBot绑定码.";
 
     public override string Description
         => "生成一个CaiBot绑定码";
