@@ -57,9 +57,9 @@ jobs:
       uses: ncipollo/release-action@v1
       with:
         tag: v$(date +'%Y.%m.%d')
-        name: CaiBotMod v$(date +'%Y.%m.%d')
+        name: v$(date +'%Y.%m.%d')
         body: |
-            # CaiBotMod
+            # CaiBotMod Ciallo～(∠・ω< )⌒☆
             ###  📅 只推荐使用最新版CaiBot扩展
             ###  📖 MOD版本的CaiBot扩展功能有所缩减
             ###  📦 Auto Build By Github Action
