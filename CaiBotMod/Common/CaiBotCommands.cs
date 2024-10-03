@@ -5,7 +5,7 @@ namespace CaiBotMod.Common;
 public class BindCodeCommand : ModCommand
 {
     public override CommandType Type
-        => CommandType.Server;
+        => CommandType.Console;
 
     public override string Command
         => "生成绑定码";
