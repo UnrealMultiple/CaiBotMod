@@ -46,18 +46,22 @@ jobs:
         path: |
           ./artifacts/Mods/CaiBotMod.tmod
 
+    - name: Set Release Tag
+      id: set_tag
+      run: echo "::set-output name=tag::v$(date +'%Y.%m.%d')"
+
     - name: Update Tag
       if: github.event_name == 'push' && github.ref == 'refs/heads/master'
       run: |
-        git tag -f v$(date +'%Y.%m.%d')
-        git push -f origin v$(date +'%Y.%m.%d')
+        git tag -f ${{ steps.set_tag.outputs.tag }}
+        git push -f origin ${{ steps.set_tag.outputs.tag }}
 
     - name: Release Mod
       if: github.event_name == 'push' && github.ref == 'refs/heads/master'
       uses: ncipollo/release-action@v1
       with:
-        tag: v$(date +'%Y.%m.%d')
-        name: v$(date +'%Y.%m.%d')
+        tag: ${{ steps.set_tag.outputs.tag }}
+        name: CaiBotMod ${{ steps.set_tag.outputs.tag }}
         body: |
             # CaiBotMod Ciallo～(∠・ω< )⌒☆
             ###  📅 只推荐使用最新版CaiBot扩展
