@@ -47,6 +47,7 @@ public class CaiBotMod : Mod
         {
             return;
         }
+
         GenCode();
         Commands.ChatCommands.Add(new Command(this.TpNpc, "tpnpc", "tpn"));
         Commands.ChatCommands.Add(new Command(Home, "home", "spawn"));
@@ -136,7 +137,6 @@ public class CaiBotMod : Mod
 
                 await Task.Delay(TimeSpan.FromSeconds(5));
             }
-            
         });
     }
 

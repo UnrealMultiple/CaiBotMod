@@ -5,10 +5,10 @@ using Terraria;
 using Terraria.Chat;
 using Terraria.DataStructures;
 using Terraria.GameContent.NetModules;
+using Terraria.ID;
 using Terraria.Localization;
 using Terraria.ModLoader;
 using Terraria.Net;
-using Terraria.ID;
 
 namespace CaiBotMod.Common;
 
@@ -35,7 +35,7 @@ public class Packet : ModSystem
         {
             return false;
         }
-        
+
         switch (messageType)
         {
             case 4:
@@ -44,6 +44,7 @@ public class Packet : ModSystem
                 {
                     return false;
                 }
+
                 if (Login[playerNumber])
                 {
                     return false;

@@ -93,7 +93,7 @@ public class MessageHandle
                 {
                     { "type", "hello" },
                     { "tshock_version", "TModLoader" },
-                    { "plugin_version", CaiBotMod.PluginVersion  },
+                    { "plugin_version", CaiBotMod.PluginVersion },
                     { "terraria_version", ModLoader.versionedName },
                     { "cai_whitelist", Config.config.WhiteList },
                     { "os", RuntimeInformation.RuntimeIdentifier },
