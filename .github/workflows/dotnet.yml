@@ -21,6 +21,20 @@ jobs:
       with:
         dotnet-version: 8.0.x
 
+    - name: Update version in build.txt
+      run: |
+        $date = Get-Date -Format "yyyy.MM.dd"
+        (Get-Content CaiBotMod/build.txt) -replace 'version = \d+\.\d+\.\d+', "version = $date" | Set-Content CaiBotMod/build.txt
+
+    - name: Commit changes
+      run: |
+        git config --global user.name 'github-actions'
+        git config --global user.email 'github-actions@github.com'
+        git add CaiBotMod/build.txt
+        git commit -m "自动更新版本号 v$date [skip ci]"
+        git push
+      continue-on-error: true
+    
     - name: Download TMODL
       run: |
         Invoke-WebRequest -Uri "https://github.com/tModLoader/tModLoader/releases/latest/download/tModLoader.zip" -OutFile "tModLoader.zip"
