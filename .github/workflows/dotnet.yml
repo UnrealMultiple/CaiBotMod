@@ -45,4 +45,26 @@ jobs:
         name: CaiBotMod
         path: |
           ./artifacts/Mods/CaiBotMod.tmod
+
+    - name: Update Tag
+      if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+      run: |
+        git tag -f $(date +'%Y.%m.%d')
+        git push -f origin $(date +'%Y.%m.%d')
+
+    - name: Release Mod
+      if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+      uses: ncipollo/release-action@v1
+      with:
+        tag: $(date +'%Y.%m.%d')
+        name: CaiBotMod v$(date +'%Y.%m.%d')
+        body: |
+            # CaiBotMod
+            ###  📅 只推荐使用最新版CaiBot扩展
+            ###  📖 MOD版本的CaiBot扩展功能有所缩减
+            ###  📦 Auto Build By Github Action
+        artifacts: |
+          ./artifacts/Mods/CaiBotMod.tmod
+        allowUpdates: true
+        removeArtifacts: true
     
