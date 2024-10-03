@@ -1,24 +1,7 @@
-﻿/*
-TShock, a server mod for Terraria
-Copyright (C) 2011-2019 Pryaxis & TShock Contributors
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using Color = System.Drawing.Color;
 
@@ -29,28 +12,22 @@ namespace CaiBotMod.Common;
 /// </summary>
 public static class PaginationTools
 {
-    public delegate Tuple<string, Color> LineFormatterDelegate(object lineData, int lineIndex, int pageNumber);
+    public delegate Tuple<string?, Color> LineFormatterDelegate(object lineData, int lineIndex, int pageNumber);
 
     public static void SendPage(
-        TSPlayer player, int pageNumber, IEnumerable dataToPaginate, int dataToPaginateCount, Settings settings = null)
+        TSPlayer player, int pageNumber, IEnumerable dataToPaginate, int dataToPaginateCount, Settings? settings = null)
     {
-        if (settings == null)
-        {
-            settings = new Settings();
-        }
+        settings ??= new Settings();
 
         if (dataToPaginateCount == 0)
         {
-            if (settings.NothingToDisplayString != null)
+            if (!player.RealPlayer)
             {
-                if (!player.RealPlayer)
-                {
-                    player.SendSuccessMessage(settings.NothingToDisplayString);
-                }
-                else
-                {
-                    player.SendMessage(settings.NothingToDisplayString, settings.HeaderTextColor);
-                }
+                player.SendSuccessMessage(settings.NothingToDisplayString);
+            }
+            else
+            {
+                player.SendMessage(settings.NothingToDisplayString, settings.HeaderTextColor);
             }
 
             return;
@@ -100,23 +77,18 @@ public static class PaginationTools
                 break;
             }
 
-            string lineMessage;
+            string? lineMessage;
             var lineColor = settings.LineTextColor;
-            if (lineData is Tuple<string, Color>)
+            if (lineData is Tuple<string, Color> data)
             {
-                var lineFormat = (Tuple<string, Color>) lineData;
-                lineMessage = lineFormat.Item1;
-                lineColor = lineFormat.Item2;
+                lineMessage = data.Item1;
+                lineColor = data.Item2;
             }
             else if (settings.LineFormatter != null)
             {
                 try
                 {
                     var lineFormat = settings.LineFormatter(lineData, offsetCounter, pageNumber);
-                    if (lineFormat == null)
-                    {
-                        continue;
-                    }
 
                     lineMessage = lineFormat.Item1;
                     lineColor = lineFormat.Item2;
@@ -173,12 +145,12 @@ public static class PaginationTools
         }
     }
 
-    public static void SendPage(TSPlayer player, int pageNumber, IList dataToPaginate, Settings settings = null)
+    public static void SendPage(TSPlayer player, int pageNumber, IList dataToPaginate, Settings? settings = null)
     {
         SendPage(player, pageNumber, dataToPaginate, dataToPaginate.Count, settings);
     }
 
-    public static List<string> BuildLinesFromTerms(IEnumerable terms, Func<object, string> termFormatter = null,
+    public static List<string> BuildLinesFromTerms(IEnumerable terms, Func<object, string> termFormatter = null!,
         string separator = ", ", int maxCharsPerLine = 80)
     {
         List<string> lines = new ();
@@ -191,12 +163,12 @@ public static class PaginationTools
                 continue;
             }
 
-            string termString;
+            string? termString = null!;
             if (termFormatter != null)
             {
                 try
                 {
-                    if ((termString = termFormatter(term)) == null)
+                    if (term != null && (termString = termFormatter(term)) == null)
                     {
                         continue;
                     }
@@ -209,9 +181,10 @@ public static class PaginationTools
             }
             else
             {
-                termString = term.ToString();
+                termString = term?.ToString();
             }
 
+            Debug.Assert(termString != null, nameof(termString) + " != null");
             if (lineBuilder.Length + termString.Length + separator.Length < maxCharsPerLine)
             {
                 lineBuilder.Append(termString).Append(separator);
@@ -243,10 +216,7 @@ public static class PaginationTools
         var pageNumberRaw = commandParameters[expectedParameterIndex];
         if (!int.TryParse(pageNumberRaw, out pageNumber) || pageNumber < 1)
         {
-            if (errorMessageReceiver != null)
-            {
-                errorMessageReceiver.SendErrorMessage("\"{0}\" 不是个有效的页码.", pageNumberRaw);
-            }
+            errorMessageReceiver.SendErrorMessage("\"{0}\" 不是个有效的页码.", pageNumberRaw);
 
             pageNumber = 1;
             return false;
@@ -259,71 +229,40 @@ public static class PaginationTools
 
     public class Settings
     {
-        private string footerFormat;
+        private readonly string _footerFormat = "输/<command> {{0}} 翻页.";
 
-        private string headerFormat;
+        private readonly string _headerFormat = "页码 {{0}}/{{1}}";
 
-        private int maxLinesPerPage;
+        private int _maxLinesPerPage = 4;
 
-        private int pageLimit;
+        private int _pageLimit;
 
 
-        public Settings()
-        {
-            this.IncludeHeader = true;
-            this.headerFormat = "页码 {{0}}/{{1}}";
-            this.HeaderTextColor = Color.Green;
-            this.IncludeFooter = true;
-            this.footerFormat = "输/<command> {{0}} 翻页.";
-            this.FooterTextColor = Color.Yellow;
-            this.NothingToDisplayString = null;
-            this.LineFormatter = null;
-            this.LineTextColor = Color.Yellow;
-            this.maxLinesPerPage = 4;
-            this.pageLimit = 0;
-        }
-
-        public bool IncludeHeader { get; set; }
+        public bool IncludeHeader { get; set; } = true;
 
         public string HeaderFormat
         {
-            get => this.headerFormat;
-            set
-            {
-                if (value == null)
-                {
-                    throw new ArgumentNullException();
-                }
-
-                this.headerFormat = value;
-            }
+            get => this._headerFormat;
+            init => this._headerFormat = value ?? throw new ArgumentNullException();
         }
 
-        public Color HeaderTextColor { get; set; }
-        public bool IncludeFooter { get; set; }
+        public Color HeaderTextColor { get; set; } = Color.Green;
+        public bool IncludeFooter { get; set; } = true;
 
         public string FooterFormat
         {
-            get => this.footerFormat;
-            set
-            {
-                if (value == null)
-                {
-                    throw new ArgumentNullException();
-                }
-
-                this.footerFormat = value;
-            }
+            get => this._footerFormat;
+            init => this._footerFormat = value ?? throw new ArgumentNullException();
         }
 
-        public Color FooterTextColor { get; set; }
-        public string NothingToDisplayString { get; set; }
-        public LineFormatterDelegate LineFormatter { get; set; }
-        public Color LineTextColor { get; set; }
+        public Color FooterTextColor { get; set; } = Color.Yellow;
+        public string? NothingToDisplayString { get; set; } = null;
+        public LineFormatterDelegate LineFormatter { get; set; } = null!;
+        public Color LineTextColor { get; set; } = Color.Yellow;
 
         public int MaxLinesPerPage
         {
-            get => this.maxLinesPerPage;
+            get => this._maxLinesPerPage;
             set
             {
                 if (value <= 0)
@@ -331,13 +270,13 @@ public static class PaginationTools
                     throw new ArgumentException("值不能为0.");
                 }
 
-                this.maxLinesPerPage = value;
+                this._maxLinesPerPage = value;
             }
         }
 
         public int PageLimit
         {
-            get => this.pageLimit;
+            get => this._pageLimit;
             set
             {
                 if (value < 0)
@@ -345,7 +284,7 @@ public static class PaginationTools
                     throw new ArgumentException("值不能为0.");
                 }
 
-                this.pageLimit = value;
+                this._pageLimit = value;
             }
         }
     }

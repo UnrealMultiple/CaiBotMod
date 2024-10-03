@@ -919,7 +919,7 @@ public class TSPlayer
     ///     Sends an information message to the player.
     /// </summary>
     /// <param name="msg">The message.</param>
-    public virtual void SendInfoMessage(string msg)
+    public virtual void SendInfoMessage(string? msg)
     {
         this.SendMessage(msg, Color.Yellow);
     }
@@ -939,7 +939,7 @@ public class TSPlayer
     ///     Sends a success message to the player.
     /// </summary>
     /// <param name="msg">The message.</param>
-    public virtual void SendSuccessMessage(string msg)
+    public virtual void SendSuccessMessage(string? msg)
     {
         this.SendMessage(msg, Color.LimeGreen);
     }
@@ -959,7 +959,7 @@ public class TSPlayer
     ///     Sends a warning message to the player.
     /// </summary>
     /// <param name="msg">The message.</param>
-    public virtual void SendWarningMessage(string msg)
+    public virtual void SendWarningMessage(string? msg)
     {
         this.SendMessage(msg, Color.OrangeRed);
     }
@@ -979,7 +979,7 @@ public class TSPlayer
     ///     Sends an error message to the player.
     /// </summary>
     /// <param name="msg">The message.</param>
-    public virtual void SendErrorMessage(string msg)
+    public virtual void SendErrorMessage(string? msg)
     {
         this.SendMessage(msg, Color.Red);
     }
@@ -1000,7 +1000,7 @@ public class TSPlayer
     /// </summary>
     /// <param name="msg">The message.</param>
     /// <param name="color">The message color.</param>
-    public virtual void SendMessage(string msg, Color color)
+    public virtual void SendMessage(string? msg, Color color)
     {
         this.SendMessage(msg, color.R, color.G, color.B);
     }
@@ -1012,11 +1012,11 @@ public class TSPlayer
     /// <param name="red">The amount of red color to factor in. Max: 255.</param>
     /// <param name="green">The amount of green color to factor in. Max: 255</param>
     /// <param name="blue">The amount of blue color to factor in. Max: 255</param>
-    public virtual void SendMessage(string msg, byte red, byte green, byte blue)
+    public virtual void SendMessage(string? msg, byte red, byte green, byte blue)
     {
         if (msg.Contains("\n"))
         {
-            var msgs = msg.Split('\n');
+            string?[] msgs = msg.Split('\n');
             foreach (var message in msgs)
             {
                 this.SendMessage(message, red, green, blue);
@@ -1269,7 +1269,7 @@ public class TSPlayer
 
 public class TSRestPlayer : TSPlayer
 {
-    internal List<string> CommandOutput = new ();
+    internal List<string?> CommandOutput = new ();
 
     public TSRestPlayer(string playerName, Group playerGroup) : base(playerName)
     {
@@ -1277,37 +1277,37 @@ public class TSRestPlayer : TSPlayer
         this.AwaitingResponse = new Dictionary<string, Action<object>>();
     }
 
-    public override void SendMessage(string msg, Color color)
+    public override void SendMessage(string? msg, Color color)
     {
         this.SendMessage(msg, color.R, color.G, color.B);
     }
 
-    public override void SendMessage(string msg, byte red, byte green, byte blue)
+    public override void SendMessage(string? msg, byte red, byte green, byte blue)
     {
         this.CommandOutput.Add(msg);
     }
 
-    public override void SendInfoMessage(string msg)
+    public override void SendInfoMessage(string? msg)
     {
         this.SendMessage(msg, Color.Yellow);
     }
 
-    public override void SendSuccessMessage(string msg)
+    public override void SendSuccessMessage(string? msg)
     {
         this.SendMessage(msg, Color.Green);
     }
 
-    public override void SendWarningMessage(string msg)
+    public override void SendWarningMessage(string? msg)
     {
         this.SendMessage(msg, Color.OrangeRed);
     }
 
-    public override void SendErrorMessage(string msg)
+    public override void SendErrorMessage(string? msg)
     {
         this.SendMessage(msg, Color.Red);
     }
 
-    public List<string> GetCommandOutput()
+    public List<string?> GetCommandOutput()
     {
         return this.CommandOutput;
     }

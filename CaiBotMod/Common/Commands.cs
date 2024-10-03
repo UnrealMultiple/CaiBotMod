@@ -113,7 +113,7 @@ public class Command
     /// <summary>
     ///     Gets or sets an extended description of this command.
     /// </summary>
-    public string[] HelpDesc { get; set; }
+    public string?[] HelpDesc { get; set; }
 
     /// <summary>
     ///     Gets the name of the command.

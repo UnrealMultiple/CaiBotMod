@@ -22,7 +22,7 @@ public class CaiBotPlayer : TSPlayer
     //    SendMessage(msg, color.R, color.G, color.B);
     //}
 
-    public override void SendMessage(string msg, byte red, byte green, byte blue)
+    public override void SendMessage(string? msg, byte red, byte green, byte blue)
     {
         var result1 = "";
         foreach (var item in ChatManager.ParseMessage(msg, new Color(red, green, blue)))
@@ -58,22 +58,22 @@ public class CaiBotPlayer : TSPlayer
         this.CommandOutput.Add(result);
     }
 
-    public override void SendInfoMessage(string msg)
+    public override void SendInfoMessage(string? msg)
     {
         this.SendMessage(msg, System.Drawing.Color.Yellow);
     }
 
-    public override void SendSuccessMessage(string msg)
+    public override void SendSuccessMessage(string? msg)
     {
         this.SendMessage(msg, System.Drawing.Color.Green);
     }
 
-    public override void SendWarningMessage(string msg)
+    public override void SendWarningMessage(string? msg)
     {
         this.SendMessage(msg, System.Drawing.Color.OrangeRed);
     }
 
-    public override void SendErrorMessage(string msg)
+    public override void SendErrorMessage(string? msg)
     {
         this.SendMessage(msg, System.Drawing.Color.Red);
     }
