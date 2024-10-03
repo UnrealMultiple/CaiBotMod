@@ -49,14 +49,14 @@ jobs:
     - name: Update Tag
       if: github.event_name == 'push' && github.ref == 'refs/heads/master'
       run: |
-        git tag -f $(date +'%Y.%m.%d')
-        git push -f origin $(date +'%Y.%m.%d')
+        git tag -f v$(date +'%Y.%m.%d')
+        git push -f origin v$(date +'%Y.%m.%d')
 
     - name: Release Mod
       if: github.event_name == 'push' && github.ref == 'refs/heads/master'
       uses: ncipollo/release-action@v1
       with:
-        tag: $(date +'%Y.%m.%d')
+        tag: v$(date +'%Y.%m.%d')
         name: CaiBotMod v$(date +'%Y.%m.%d')
         body: |
             # CaiBotMod
