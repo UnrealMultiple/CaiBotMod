@@ -19,19 +19,19 @@ public class RestObject : Dictionary<string, object>
 
     public string Status
     {
-        get => this["status"] as string;
+        get => (this["status"] as string)!;
         set => this["status"] = value;
     }
 
     public string Error
     {
-        get => this["error"] as string;
+        get => (this["error"] as string)!;
         set => this["error"] = value;
     }
 
     public string Response
     {
-        get => this["response"] as string;
+        get => (this["response"] as string)!;
         set => this["response"] = value;
     }
 
@@ -55,7 +55,7 @@ public class RestObject : Dictionary<string, object>
                 return value;
             }
 
-            return null;
+            return null!;
         }
         set
         {

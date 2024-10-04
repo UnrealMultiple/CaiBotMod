@@ -10,8 +10,8 @@ internal class 法律鱼 : ModItem
 {
     public override void SetStaticDefaults()
     {
-        this.Item.ResearchUnlockCount = 999;
-        ItemID.Sets.CanBePlacedOnWeaponRacks[this.Type] = true; // All vanilla fish can be placed in a weapon rack.
+        this.Item.ResearchUnlockCount = 666;
+        ItemID.Sets.CanBePlacedOnWeaponRacks[this.Type] = true; 
     }
 
     public override void ModifyTooltips(List<TooltipLine> tooltips)
@@ -22,9 +22,6 @@ internal class 法律鱼 : ModItem
 
     public override void SetDefaults()
     {
-        // DefaultToQuestFish sets quest fish properties.
-        // Of note, it sets rare to ItemRarityID.Quest, which is the special rarity for quest items.
-        // It also sets uniqueStack to true, which prevents players from picking up a 2nd copy of the item into their inventory.
         this.Item.DefaultToQuestFish();
         this.Item.width = 16;
         this.Item.height = 16;
@@ -35,20 +32,17 @@ internal class 法律鱼 : ModItem
     public override bool IsQuestFish()
     {
         return true;
-        // Makes the item a quest fish
     }
 
     public override bool IsAnglerQuestAvailable()
     {
         return true;
-        // Makes the quest only appear in hard mode. Adding a '!' before Main.hardMode makes it ONLY available in pre-hardmode.
     }
 
     public override void AnglerQuestChat(ref string description, ref string catchLocation)
     {
-        // How the angler describes the fish to the player.
-        description = "我靠我突然感觉到了爆金币的力量，难道这就是传说中的法律鱼?!";
-        // What it says on the bottom of the angler's text box of how to catch the fish.
+        description = "我靠我突然感觉到了爆金币的力量，难道这就是传说中的法律鱼?!\n" +
+                      "*其实这是Cai群里一个管理,CaiBot其实一开始是Cai自己用的,后面就莫名其妙公开了,这段奇妙的物品代码也是,算是个彩蛋吧233...";
         catchLocation = "法律是无处不在的...";
     }
 }

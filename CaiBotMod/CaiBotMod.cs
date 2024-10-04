@@ -21,25 +21,12 @@ namespace CaiBotMod;
 public class CaiBotMod : Mod
 {
     public static int InitCode = -1;
-    private static bool _showCode;
     public static ClientWebSocket WebSocket = new ();
-    public static Version? PluginVersion = typeof(CaiBotMod).Assembly.GetName().Version;
+    public static Task WebSocketTask = Task.CompletedTask;
+    public static readonly CancellationTokenSource TokenSource = new ();
+    public static CancellationToken Ct = TokenSource.Token;
+    public static readonly Version? PluginVersion = ModLoader.GetMod("CaiBotMod").Version;
     public static readonly Dictionary<string, Point> PlayerDeath = new ();
-
-    public static List<TSPlayer> Players
-    {
-        get
-        {
-            List<TSPlayer> players = new ();
-            var indexes = Netplay.Clients.Where(p => null != p).Select(p => p.Id);
-            foreach (var index in indexes)
-            {
-                players.Add(new TSPlayer(index));
-            }
-
-            return players;
-        }
-    }
 
     public override void Load()
     {
@@ -47,25 +34,25 @@ public class CaiBotMod : Mod
         {
             return;
         }
-
-        GenCode();
+        
         Commands.ChatCommands.Add(new Command(this.TpNpc, "tpnpc", "tpn"));
         Commands.ChatCommands.Add(new Command(Home, "home", "spawn"));
         Commands.ChatCommands.Add(new Command(this.Who, "who", "online"));
         Commands.ChatCommands.Add(new Command(this.Back, "back", "b"));
         Commands.ChatCommands.Add(new Command(Help, "help"));
         Config.Read();
-        Task.Run(async () =>
+
+        if (Config.config.Token == "")
+        {
+            GenCode();
+        }
+        
+        WebSocketTask = Task.Run(async () =>
         {
             while (true)
             {
                 try
                 {
-                    while (Main.worldName == "")
-                    {
-                        await Task.Delay(TimeSpan.FromSeconds(1));
-                    }
-
                     while (Config.config.Token == "")
                     {
                         await Task.Delay(TimeSpan.FromSeconds(10));
@@ -74,7 +61,6 @@ public class CaiBotMod : Mod
                         var response = client.GetAsync($"http://api.terraria.ink:22334/bot/get_token?" +
                                                        $"code={InitCode}")
                             .Result;
-                        //TShock.Log.ConsoleInfo($"[CaiAPI]尝试被动绑定,状态码:{response.StatusCode}");
                         if (response.StatusCode == HttpStatusCode.OK && Config.config.Token == "")
                         {
                             var responseBody = await response.Content.ReadAsStringAsync();
@@ -82,21 +68,13 @@ public class CaiBotMod : Mod
                             var token = json["token"]!.ToString();
                             Config.config.Token = token;
                             Config.config.Write();
+                            Console.ForegroundColor = ConsoleColor.Green;
                             Console.WriteLine("[CaiAPI]被动绑定成功!");
+                            Console.ResetColor();
                         }
                     }
 
                     WebSocket = new ClientWebSocket();
-                    while (Config.config.Token == "")
-                    {
-                        await Task.Delay(TimeSpan.FromSeconds(5));
-                        if (Netplay.TcpListener != null && !_showCode)
-                        {
-                            _showCode = true;
-                            Console.WriteLine($"[CaiBot]您的服务器绑定码为: {InitCode}");
-                        }
-                    }
-
                     if (Program.LaunchParameters.ContainsKey("-cailocaldebug"))
                     {
                         await WebSocket.ConnectAsync(new Uri("ws://127.0.0.1:22334/bot/" + Config.config.Token),
@@ -124,6 +102,7 @@ public class CaiBotMod : Mod
                 }
                 catch (Exception ex)
                 {
+                    Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine("[CaiAPI]CaiBot断开连接...");
                     if (Program.LaunchParameters.ContainsKey("-caidebug"))
                     {
@@ -133,11 +112,36 @@ public class CaiBotMod : Mod
                     {
                         Console.WriteLine("链接失败原因: " + ex.Message);
                     }
+                    Console.ResetColor();
                 }
 
                 await Task.Delay(TimeSpan.FromSeconds(5));
             }
-        });
+        },Ct);
+    }
+    
+    public override void Unload()
+    {
+        if (!WebSocketTask.IsCompleted)
+        {
+            TokenSource.Cancel();
+            TokenSource.Dispose();
+        }
+    }
+    
+    public static List<TSPlayer> Players
+    {
+        get
+        {
+            List<TSPlayer> players = new ();
+            var indexes = Netplay.Clients.Where(p => null != p).Select(p => p.Id);
+            foreach (var index in indexes)
+            {
+                players.Add(new TSPlayer(index));
+            }
+
+            return players;
+        }
     }
 
     private static void Help(CommandArgs args)
@@ -191,12 +195,21 @@ public class CaiBotMod : Mod
     {
         if (Config.config.Token != "")
         {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("[CaiBot]你已经绑定过了!");
+            Console.ResetColor();
             return;
         }
 
         Random rnd = new ();
         InitCode = rnd.Next(10000000, 99999999);
-        Console.WriteLine($"[CaiBot]您的服务器绑定码为: {InitCode}");
+        Console.ForegroundColor = ConsoleColor.Green;
+        Console.Write($"[CaiBot]您的服务器绑定码为: ");
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.WriteLine(InitCode);
+        Console.ForegroundColor = ConsoleColor.Magenta;
+        Console.WriteLine($"*你可以在启动服务器后使用'/生成绑定码'重新生成");
+        Console.ResetColor();
     }
 
     private void Back(CommandArgs args)
@@ -317,7 +330,5 @@ public class CaiBotMod : Mod
         NetMessage.SendData(MessageID.Kick, index, -1, NetworkText.FromLiteral(reason));
     }
 
-    public override void Unload()
-    {
-    }
+
 }

@@ -78,7 +78,7 @@ public class TSPlayer
 
     private readonly Item EmptySentinelItem = new ();
 
-    private readonly Player FakePlayer;
+    private readonly Player FakePlayer = null!;
 
     private int _respawnTimer;
 
@@ -97,7 +97,7 @@ public class TSPlayer
     /// </summary>
     public Dictionary<string, Action<object>> AwaitingResponse;
 
-    private string CacheIP;
+    private string CacheIP = null!;
 
     /// <summary>
     ///     Players controls are inverted if using SSC
@@ -114,7 +114,7 @@ public class TSPlayer
     /// <summary>
     ///     The current region this player is in, or null if none.
     /// </summary>
-    public Region CurrentRegion = null;
+    public Region CurrentRegion = null!;
 
     /// <summary>
     ///     Contains data stored by plugins
@@ -126,7 +126,7 @@ public class TSPlayer
     /// </summary>
     public bool DisplayLogs = true;
 
-    private Group group;
+    private Group group = null!;
 
     /// <summary>
     ///     Whether the player has been nagged about logging in.
@@ -170,7 +170,7 @@ public class TSPlayer
     /// <summary>
     ///     The last player that the player whispered with (to or from).
     /// </summary>
-    public TSPlayer LastWhisper;
+    public TSPlayer LastWhisper = null!;
 
     /// <summary>
     ///     Whether the player has been harrassed about logging in due to server side inventory or forced login.
@@ -227,9 +227,9 @@ public class TSPlayer
     /// <summary>
     ///     The player's temporary group.  This overrides the user's actual group.
     /// </summary>
-    public Group tempGroup;
+    public Group tempGroup = null!;
 
-    public Timer tempGroupTimer;
+    public Timer tempGroupTimer = null!;
 
     /// <summary>
     ///     Temp points for use in regions and other plugins.
@@ -339,7 +339,7 @@ public class TSPlayer
 
     public bool AwaitingName { get; set; }
 
-    public string[] AwaitingNameParameters { get; set; }
+    public string[] AwaitingNameParameters { get; set; } = null!;
 
     /// <summary>
     ///     The last time a player broke a grief check.
@@ -434,11 +434,11 @@ public class TSPlayer
         {
             if (string.IsNullOrEmpty(this.CacheIP))
             {
-                return this.CacheIP = this.RealPlayer
+                return this.CacheIP = (this.RealPlayer
                     ? this.Client.Socket.IsConnected()
                         ? this.Client.Socket.GetRemoteAddress().ToString()
                         : ""
-                    : "127.0.0.1";
+                    : "127.0.0.1")!;
             }
 
             return this.CacheIP;
@@ -664,9 +664,9 @@ public class TSPlayer
     public T GetData<T>(string key)
     {
         object obj;
-        if (!this.data.TryGetValue(key, out obj))
+        if (!this.data.TryGetValue(key, out obj!))
         {
-            return default;
+            return default!;
         }
 
         return (T) obj;
@@ -680,9 +680,9 @@ public class TSPlayer
     /// <param name="value">Object to store.</param>
     public void SetData<T>(string key, T value)
     {
-        if (!this.data.TryAdd(key, value))
+        if (!this.data.TryAdd(key, value!))
         {
-            this.data.TryUpdate(key, value, this.data[key]);
+            this.data.TryUpdate(key, value!, this.data[key]);
         }
     }
 
@@ -694,12 +694,12 @@ public class TSPlayer
     public object RemoveData(string key)
     {
         object rem;
-        if (this.data.TryRemove(key, out rem))
+        if (this.data.TryRemove(key, out rem!))
         {
             return rem;
         }
 
-        return null;
+        return null!;
     }
 
     /// <summary>
@@ -720,11 +720,8 @@ public class TSPlayer
     {
         this.SendWarningMessage("Your temporary group access has expired.");
 
-        this.tempGroup = null;
-        if (sender != null)
-        {
-            ((Timer) sender).Stop();
-        }
+        this.tempGroup = null!;
+        ((Timer)sender)?.Stop();
     }
 
     /// <summary>
@@ -824,8 +821,9 @@ public class TSPlayer
             NetMessage.SendTileSquare(this.Index, x, y, width, length, changeType);
             return true;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
+            // ignored
         }
 
         return false;
@@ -882,21 +880,21 @@ public class TSPlayer
 
     private bool Depleted(Item item)
     {
-        return item.type == 0 || item.stack == 0;
+        return item.type == ItemID.None || item.stack == 0;
     }
 
 
     private void SendItemSlotPacketFor(int slot)
     {
         var prefix = this.TPlayer.inventory[slot].prefix;
-        NetMessage.SendData(5, this.Index, -1, null, this.Index, slot, prefix);
+        NetMessage.SendData(MessageID.SyncEquipment, this.Index, -1, null, this.Index, slot, prefix);
     }
 
 
     private Item GiveItemDirectly_FillEmptyInventorySlot(Item item, int slot)
     {
         Item[]? inv = this.TPlayer.inventory;
-        if (inv[slot].type != 0)
+        if (inv[slot].type != ItemID.None)
         {
             return item;
         }
@@ -912,7 +910,7 @@ public class TSPlayer
             type, stack, true, prefix, true);
         Main.item[itemIndex].playerIndexTheItemIsReservedFor = this.Index;
         this.SendData(PacketTypes.ItemDrop, "", itemIndex, 1);
-        this.SendData(PacketTypes.ItemOwner, null, itemIndex);
+        this.SendData(PacketTypes.ItemOwner, "", itemIndex);
     }
 
     /// <summary>
@@ -1002,7 +1000,7 @@ public class TSPlayer
     /// <param name="color">The message color.</param>
     public virtual void SendMessage(string? msg, Color color)
     {
-        this.SendMessage(msg, color.R, color.G, color.B);
+        this.SendMessage(msg!, color.R, color.G, color.B);
     }
 
     /// <summary>
@@ -1012,14 +1010,14 @@ public class TSPlayer
     /// <param name="red">The amount of red color to factor in. Max: 255.</param>
     /// <param name="green">The amount of green color to factor in. Max: 255</param>
     /// <param name="blue">The amount of blue color to factor in. Max: 255</param>
-    public virtual void SendMessage(string? msg, byte red, byte green, byte blue)
+    public virtual void SendMessage(string msg, byte red, byte green, byte blue)
     {
         if (msg.Contains("\n"))
         {
             string?[] msgs = msg.Split('\n');
             foreach (var message in msgs)
             {
-                this.SendMessage(message, red, green, blue);
+                this.SendMessage(message!, red, green, blue);
             }
 
             return;

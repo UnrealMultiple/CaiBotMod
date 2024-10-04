@@ -60,7 +60,7 @@ public class CommandArgs : EventArgs
 
 public class Command
 {
-    private CommandDelegate commandDelegate;
+    private CommandDelegate commandDelegate = null!;
 
     public Command(List<string> permissions, CommandDelegate cmd, params string[] names)
         : this(cmd, names)
@@ -90,7 +90,7 @@ public class Command
         this.CommandDelegate = cmd;
         this.DoLog = true;
         this.HelpText = "没有可用的帮助.";
-        this.HelpDesc = null;
+        this.HelpDesc = null!;
         this.Names = new List<string>(names);
         this.Permissions = new List<string>();
     }
@@ -155,9 +155,9 @@ public class Command
         {
             this.CommandDelegate(new CommandArgs(msg, silent, ply, parms));
         }
-        catch (Exception e)
+        catch
         {
-            ply.SendErrorMessage("命令爆了,查看日志获得详细信息.");
+            ply.SendErrorMessage("运行命令时出现错误!");
         }
 
         return true;

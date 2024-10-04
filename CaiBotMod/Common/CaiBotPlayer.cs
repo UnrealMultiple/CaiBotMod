@@ -17,11 +17,6 @@ public class CaiBotPlayer : TSPlayer
         this.AwaitingResponse = new Dictionary<string, Action<object>>();
     }
 
-    //public override void SendMessage(string msg, Color color)
-    //{
-    //    SendMessage(msg, color.R, color.G, color.B);
-    //}
-
     public override void SendMessage(string? msg, byte red, byte green, byte blue)
     {
         var result1 = "";

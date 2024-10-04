@@ -15,7 +15,7 @@ using Terraria.ModLoader;
 
 namespace CaiBotMod.Common;
 
-public class MessageHandle
+public static class MessageHandle
 {
     public static bool IsWebsocketConnected =>
         CaiBotMod.WebSocket.State == WebSocketState.Open;
@@ -79,21 +79,23 @@ public class MessageHandle
         switch (type)
         {
             case "delserver":
+                Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("[CaiAPI]BOT发送解绑命令...");
+                Console.ResetColor();
                 Config.config.Token = "";
                 Config.config.Write();
-                Random rnd = new ();
-                CaiBotMod.InitCode = rnd.Next(10000000, 99999999);
-                Console.WriteLine($"[CaiBot]您的服务器绑定码为: {CaiBotMod.InitCode}");
+                CaiBotMod.GenCode();
                 break;
             case "hello":
+                Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine("[CaiAPI]CaiBOT连接成功...");
+                Console.ResetColor();
                 //发送服务器信息
                 result = new RestObject
                 {
                     { "type", "hello" },
                     { "tshock_version", "TModLoader" },
-                    { "plugin_version", CaiBotMod.PluginVersion },
+                    { "plugin_version", CaiBotMod.PluginVersion! },
                     { "terraria_version", ModLoader.versionedName },
                     { "cai_whitelist", Config.config.WhiteList },
                     { "os", RuntimeInformation.RuntimeIdentifier },
@@ -104,10 +106,20 @@ public class MessageHandle
                 break;
             case "groupid":
                 var groupId = (long) jsonObject["groupid"]!;
-                Console.WriteLine($"[CaiAPI]群号获取成功: {groupId}");
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.Write("[CaiAPI]群号获取成功: ");
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine(groupId);
+                Console.ResetColor();
                 if (Config.config.GroupNumber != 0L)
                 {
-                    Console.WriteLine($"[CaiAPI]检测到你在配置文件中已设置群号[{Config.config.GroupNumber}],BOT自动获取的群号将被忽略！");
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.Write("[CaiAPI]检测到你在配置文件中已设置群号: ");
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    Console.Write(Config.config.GroupNumber);
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine(",BOT自动获取的群号将被忽略！");
+                    Console.ResetColor();
                 }
                 else
                 {
@@ -119,7 +131,9 @@ public class MessageHandle
                 var cmd = (string) jsonObject["cmd"]!;
                 CaiBotPlayer tr = new ();
                 Commands.HandleCommand(tr, cmd);
+                Console.ForegroundColor = ConsoleColor.Magenta;
                 Console.WriteLine($"[CaiBot] `{(string) jsonObject["at"]!}`来自群`{(long) jsonObject["group"]!}`执行了: {(string) jsonObject["cmd"]!}");
+                Console.ResetColor();
                 RestObject dictionary = new () { { "type", "cmd" }, { "result", string.Join('\n', tr.GetCommandOutput()) }, { "at", (string) jsonObject["at"]! }, { "group", (long) jsonObject["group"]! } };
                 await SendDateAsync(dictionary.ToJson());
                 break;
@@ -133,7 +147,7 @@ public class MessageHandle
                 else
                 {
                     onlineResult +=
-                        $"在线的玩家({Main.player.Where(p => null != p && p.active).Count()}/{Main.maxNetPlayers})\n";
+                        $"在线的玩家({Main.player.Count(p => null != p && p.active)}/{Main.maxNetPlayers})\n";
 
                     for (var k = 0; k < 255; k++)
                     {
