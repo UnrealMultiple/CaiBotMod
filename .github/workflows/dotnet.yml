@@ -21,6 +21,20 @@ jobs:
       with:
         dotnet-version: 8.0.x
 
+    - name: Update version in build.txt
+      run: |
+        $date = Get-Date -Format "yyyy.MM.dd"
+        (Get-Content CaiBotMod/build.txt) -replace 'version = \d+\.\d+\.\d+', "version = $date" | Set-Content CaiBotMod/build.txt
+
+    - name: Commit changes
+      run: |
+        git config --global user.name 'github-actions'
+        git config --global user.email 'github-actions@github.com'
+        git add CaiBotMod/build.txt
+        git commit -m "自动更新版本号 v$date [skip ci]"
+        git push
+      continue-on-error: true
+    
     - name: Download TMODL
       run: |
         Invoke-WebRequest -Uri "https://github.com/tModLoader/tModLoader/releases/latest/download/tModLoader.zip" -OutFile "tModLoader.zip"
@@ -45,4 +59,30 @@ jobs:
         name: CaiBotMod
         path: |
           ./artifacts/Mods/CaiBotMod.tmod
+
+    - name: Set Release Tag
+      id: set_tag
+      run: echo "::set-output name=tag::v$(date +'%Y.%m.%d')"
+
+    - name: Update Tag
+      if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+      run: |
+        git tag -f ${{ steps.set_tag.outputs.tag }}
+        git push -f origin ${{ steps.set_tag.outputs.tag }}
+
+    - name: Release Mod
+      if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+      uses: ncipollo/release-action@v1
+      with:
+        tag: ${{ steps.set_tag.outputs.tag }}
+        name: CaiBotMod ${{ steps.set_tag.outputs.tag }}
+        body: |
+            # CaiBotMod Ciallo～(∠・ω< )⌒☆
+            ###  📅 只推荐使用最新版CaiBot扩展
+            ###  📖 MOD版本的CaiBot扩展功能有所缩减
+            ###  📦 Auto Build By Github Action
+        artifacts: |
+          ./artifacts/Mods/CaiBotMod.tmod
+        allowUpdates: true
+        removeArtifacts: true
     
