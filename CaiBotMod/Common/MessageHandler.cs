@@ -264,18 +264,7 @@ public static class MessageHandle
             case "whitelist":
                 var name = (string) jsonObject["name"]!;
                 var code = (int) jsonObject["code"]!;
-                var uuids = jsonObject["uuids"]!.ToObject<List<string>>()!;
-                if (await Login.CheckWhiteAsync(name, code, uuids))
-                {
-                    var playerList = TSPlayer.FindByNameOrID("tsn:" + name);
-                    if (playerList.Count == 0)
-                    {
-                        return;
-                    }
-
-                    Packet.Login[playerList[0].Index] = true;
-                }
-
+                await Login.CheckWhiteAsync(name, code);
                 break;
             case "selfkick":
                 name = (string) jsonObject["name"]!;

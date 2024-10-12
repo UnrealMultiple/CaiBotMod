@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.IO;
+using System.Threading.Tasks;
 using Terraria;
 using Terraria.Chat;
 using Terraria.DataStructures;
@@ -14,8 +15,8 @@ namespace CaiBotMod.Common;
 
 public class Packet : ModSystem
 {
-    public static string[] UUIDs = new string[256];
-    public static bool[] Login = new bool[256];
+    public static readonly string[] UUIDs = new string[256];
+    public static readonly bool[] Login = new bool[256];
 
     public override bool HijackSendData(int whoAmI, int msgType, int remoteClient, int ignoreClient, NetworkText text,
         int number, float number2, float number3, float number4, int number5, int number6, int number7)
@@ -40,35 +41,61 @@ public class Packet : ModSystem
         {
             case 4:
             {
+                
                 if (!Config.config.WhiteList)
                 {
                     return false;
                 }
-
-                if (Login[playerNumber])
-                {
-                    return false;
-                }
-
+                
                 reader.ReadByte();
                 reader.ReadByte();
                 reader.ReadByte();
-                var name = reader.ReadString().Trim().Trim();
+                
+                var name = reader.ReadString().Trim();
+                
                 if (name.Length == 17)
                 {
                     return false;
                 }
 
-                RestObject re = new () { { "type", "whitelist" }, { "name", name } };
-                if (!MessageHandle.IsWebsocketConnected)
+                Task.Run(async () =>
                 {
-                    Console.WriteLine("[CaiBot]机器人处于未连接状态, 玩家无法加入。\n" +
-                                      "如果你不想使用Cai白名单，可以在tshock/CaiBot.json中将其关闭。");
-                    return true;
-                }
 
-                MessageHandle.SendDateAsync(re.ToJson()).Wait();
-                break;
+                    var timeout = Task.Delay(1000); //貌似不是很优雅捏
+                    await Task.Run(async () =>
+                    {
+                        while ((Login[playerNumber] &&  UUIDs[playerNumber]!=null  && timeout.IsCompleted == false) || (UUIDs[playerNumber]==null && timeout.IsCompleted == false))
+                        {
+                            await Task.Delay(10);
+                        }
+
+                    });
+                    if (!Login[playerNumber] && timeout.IsCompleted)
+                    {
+                        NetMessage.SendData(MessageID.Kick, playerNumber, -1, NetworkText.FromLiteral("[CaiBot]UUID等待超时"));
+                        Netplay.Clients[playerNumber].Socket.Close();
+                        return true;
+                    }
+                    if (Login[playerNumber])
+                    {
+                        return false;
+                    }
+                    RestObject re = new ()
+                    {
+                        { "type", "whitelistV2" }, { "name", name }, { "uuid", UUIDs[playerNumber] }, { "ip", Netplay.Clients[playerNumber].Socket.GetRemoteAddress().ToString()! },
+                    };
+                    if (!MessageHandle.IsWebsocketConnected)
+                    {
+                        Console.WriteLine("[CaiBot]机器人处于未连接状态, 玩家无法加入。\n" +
+                                          "如果你不想使用Cai白名单，可以在tshock/CaiBot.json中将其关闭。");
+                        return true;
+                    }
+
+                    await MessageHandle.SendDateAsync(re.ToJson());
+
+                    return false;
+                });
+                return false;
             }
             case 68:
             {
