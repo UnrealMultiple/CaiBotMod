@@ -76,17 +76,9 @@ public static class MessageHandle
         if (item.netID == 0)
         {
             return "";
-        }
+        } 
+        return GetItemDesc(item.netID, item.Name, item.stack, item.prefix, isFlag);
 
-        if (item.ModItem == null)
-        {
-            return GetItemDesc(item.netID, item.Name, item.stack, item.prefix, isFlag);
-        }
-        else
-        {
-            var name = item.ModItem.LocalizationCategory;
-            return GetItemDesc(item.netID, name, item.stack, item.prefix, isFlag);
-        }
     }
     
 
@@ -755,8 +747,8 @@ public static class MessageHandle
                         { "type", "lookbag_text" },
                         { "name", name },
                         { "exist", 1 },
-                        // { "inventory", string.Join("\n", msgs) },
-                        { "inventory", string.Join("暂时无法使用") },
+                        { "inventory", string.Join("\n", msgs) },
+                        //{ "inventory", string.Join("暂时无法使用") },
                         { "group", (long) jsonObject["group"]! }
                     };
                     //Console.WriteLine(string.Join("\n", msgs));
