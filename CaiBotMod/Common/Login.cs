@@ -1,13 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Terraria;
 
 namespace CaiBotMod.Common;
 
 public static class Login
 {
-    public static async Task<bool> CheckWhiteAsync(string name, int code)
+    public static bool CheckWhiteAsync(string name, int code)
     {
         var playerList = TSPlayer.FindByNameOrID("tsn:" + name);
         var number = Config.config.GroupNumber;
@@ -22,7 +20,7 @@ public static class Login
         {
             Console.WriteLine($"[白名单]玩家[{name}](IP: {plr.IP})版本可能过低...");
             plr.Disconnect("你的游戏版本可能过低,请使用Terraria1.4.4+游玩");
-            Netplay.Clients[plr.Index].Socket.Close();
+            //Netplay.Clients[plr.Index].Socket.Close();
             return false;
         }
 
@@ -33,7 +31,10 @@ public static class Login
                 case 200:
                 {
                     Console.WriteLine($"[白名单]玩家[{name}](IP: {plr.IP})已通过白名单验证...");
-                    Packet.Login[plr.Index] = true;
+                    plr.IsLoggedIn = true;
+                    Netplay.Clients[plr.Index].State = 2;
+                    NetMessage.SendData((int) PacketTypes.WorldInfo, plr.Index);
+                    Main.SyncAnInvasion(plr.Index);
                     break;
                 }
                 case 404:
@@ -41,7 +42,7 @@ public static class Login
                     Console.WriteLine($"[白名单]玩家[{name}](IP: {plr.IP})没有添加白名单...");
                     plr.SilentKickInProgress = true;
                     plr.Disconnect($"没有添加白名单\n请在群{number}内发送'添加白名单 角色名字'");
-                    Netplay.Clients[plr.Index].Socket.Close();
+                    //Netplay.Clients[plr.Index].Socket.Close();
                     return false;
                 }
                 case 403:
@@ -49,7 +50,7 @@ public static class Login
                     Console.WriteLine($"[白名单]玩家[{name}](IP: {plr.IP})白名单被冻结...");
                     plr.SilentKickInProgress = true;
                     plr.Disconnect("[白名单]你已被服务器屏蔽\n你在云黑名单内!");
-                    Netplay.Clients[plr.Index].Socket.Close();
+                    //Netplay.Clients[plr.Index].Socket.Close();
                     return false;
                 }
                 case 401:
@@ -57,21 +58,20 @@ public static class Login
                     Console.WriteLine($"[白名单]玩家[{name}](IP: {plr.IP})不在本群内...");
                     plr.SilentKickInProgress = true;
                     plr.Disconnect($"[白名单]不在本服务器群内!\n请加入服务器群：{number}");
-                    Netplay.Clients[plr.Index].Socket.Close();
+                    //Netplay.Clients[plr.Index].Socket.Close();
                     return false;
                 }
                 case 405:
                 {
-                    Console.WriteLine(($"[Cai白名单]玩家[{name}](IP: {plr.IP})使用未授权的设备..."));
+                    Console.WriteLine($"[Cai白名单]玩家[{name}](IP: {plr.IP})使用未授权的设备...");
                     plr.SilentKickInProgress = true;
                     plr.Disconnect($"[Cai白名单]在群{number}内发送'登录',\n" +
                                    $"以批准此设备登录");
-                    Netplay.Clients[plr.Index].Socket.Close();
-                    
+                    //Netplay.Clients[plr.Index].Socket.Close();
+
                     return false;
                 }
             }
-            
         }
         catch (Exception ex)
         {

@@ -11,7 +11,7 @@ internal class 法律鱼 : ModItem
     public override void SetStaticDefaults()
     {
         this.Item.ResearchUnlockCount = 666;
-        ItemID.Sets.CanBePlacedOnWeaponRacks[this.Type] = true; 
+        ItemID.Sets.CanBePlacedOnWeaponRacks[this.Type] = true;
     }
 
     public override void ModifyTooltips(List<TooltipLine> tooltips)

@@ -71,6 +71,71 @@ public static class MessageHandle
         }
     }
 
+    private static string GetItemDesc(Item item, bool isFlag = false)
+    {
+        if (item.netID == 0)
+        {
+            return "";
+        }
+
+        if (item.ModItem == null)
+        {
+            return GetItemDesc(item.netID, item.Name, item.stack, item.prefix, isFlag);
+        }
+        else
+        {
+            var name = item.ModItem.LocalizationCategory;
+            return GetItemDesc(item.netID, name, item.stack, item.prefix, isFlag);
+        }
+    }
+    
+
+    private static string GetItemDesc(int id, bool Tag = true)
+    {
+        return Tag ? $"[i:{id}]" : $"[{Lang.GetItemNameValue(id)}]";
+    }
+
+    private static string GetItemDesc(int id, string name, int stack, int prefix, bool isFlag = false)
+    {
+        if (isFlag)
+        {
+            // https://terraria.fandom.com/wiki/Chat
+            // [i:29]   数量
+            // [i/s10:29]   数量
+            // [i/p57:4]    词缀
+            // 控制台显示 物品名称
+            // 4.4.0 -1.4.1.2   [i:4444]
+            // 4.5.0 -1.4.2.2   [女巫扫帚]
+            //ChatItemIsIcon = TShock.VersionNum.CompareTo(new Version(4, 5, 0, 0)) >= 0;
+            //Console.WriteLine($"ChatItemIsIcon:");
+            if (stack > 1)
+            {
+                return $"[i/s{stack}:{id}]";
+            }
+
+            if (prefix.Equals(0))
+            {
+                return $"[i:{id}]";
+            }
+
+            return $"[i/p{prefix}:{id}]";
+        }
+
+        var s = name;
+        var prefixName = Lang.prefix[prefix].Value;
+        if (prefixName != "")
+        {
+            s = $"{prefixName}的 {s}";
+        }
+
+        if (stack > 1)
+        {
+            s = $"{s} ({stack})";
+        }
+
+        return $"[{s}]";
+    }
+
     public static async Task HandleMessageAsync(string receivedData)
     {
         var jsonObject = JObject.Parse(receivedData);
@@ -257,14 +322,14 @@ public static class MessageHandle
                 break;
             case "process":
                 List<Dictionary<string, bool>> processList = new (
-                    [new () { { "King Slime", NPC.downedSlimeKing } }, new () { { "Eye of Cthulhu", NPC.downedBoss1 } }, new () { { "Eater of Worlds / Brain of Cthulhu", NPC.downedBoss2 } }, new () { { "Queen Bee", NPC.downedQueenBee } }, new () { { "Skeletron", NPC.downedBoss3 } }, new () { { "Deerclops", NPC.downedDeerclops } }, new () { { "Wall of Flesh", Main.hardMode } }, new () { { "Queen Slime", NPC.downedQueenSlime } }, new () { { "The Twins", NPC.downedMechBoss2 } }, new () { { "The Destroyer", NPC.downedMechBoss1 } }, new () { { "Skeletron Prime", NPC.downedMechBoss3 } }, new () { { "Plantera", NPC.downedPlantBoss } }, new () { { "Golem", NPC.downedGolemBoss } }, new () { { "Duke Fishron", NPC.downedFishron } }, new () { { "Empress of Light", NPC.downedEmpressOfLight } }, new () { { "Lunatic Cultist", NPC.downedAncientCultist } }, new () { { "Moon Lord", NPC.downedMoonlord } }, new () { { "Solar Pillar", NPC.downedTowerSolar } }, new () { { "Nebula Pillar", NPC.downedTowerNebula } }, new () { { "Vortex Pillar", NPC.downedTowerVortex } }, new () { { "Stardust Pillar", NPC.downedTowerStardust } }]);
+                    [new Dictionary<string, bool> { { "King Slime", NPC.downedSlimeKing } }, new Dictionary<string, bool> { { "Eye of Cthulhu", NPC.downedBoss1 } }, new Dictionary<string, bool> { { "Eater of Worlds / Brain of Cthulhu", NPC.downedBoss2 } }, new Dictionary<string, bool> { { "Queen Bee", NPC.downedQueenBee } }, new Dictionary<string, bool> { { "Skeletron", NPC.downedBoss3 } }, new Dictionary<string, bool> { { "Deerclops", NPC.downedDeerclops } }, new Dictionary<string, bool> { { "Wall of Flesh", Main.hardMode } }, new Dictionary<string, bool> { { "Queen Slime", NPC.downedQueenSlime } }, new Dictionary<string, bool> { { "The Twins", NPC.downedMechBoss2 } }, new Dictionary<string, bool> { { "The Destroyer", NPC.downedMechBoss1 } }, new Dictionary<string, bool> { { "Skeletron Prime", NPC.downedMechBoss3 } }, new Dictionary<string, bool> { { "Plantera", NPC.downedPlantBoss } }, new Dictionary<string, bool> { { "Golem", NPC.downedGolemBoss } }, new Dictionary<string, bool> { { "Duke Fishron", NPC.downedFishron } }, new Dictionary<string, bool> { { "Empress of Light", NPC.downedEmpressOfLight } }, new Dictionary<string, bool> { { "Lunatic Cultist", NPC.downedAncientCultist } }, new Dictionary<string, bool> { { "Moon Lord", NPC.downedMoonlord } }, new Dictionary<string, bool> { { "Solar Pillar", NPC.downedTowerSolar } }, new Dictionary<string, bool> { { "Nebula Pillar", NPC.downedTowerNebula } }, new Dictionary<string, bool> { { "Vortex Pillar", NPC.downedTowerVortex } }, new Dictionary<string, bool> { { "Stardust Pillar", NPC.downedTowerStardust } }]);
                 result = new RestObject { { "type", "process" }, { "result", processList }, { "worldname", Main.worldName }, { "group", (long) jsonObject["group"]! } };
                 await SendDateAsync(JsonConvert.SerializeObject(result));
                 break;
             case "whitelist":
                 var name = (string) jsonObject["name"]!;
                 var code = (int) jsonObject["code"]!;
-                await Login.CheckWhiteAsync(name, code);
+                Login.CheckWhiteAsync(name, code);
                 break;
             case "selfkick":
                 name = (string) jsonObject["name"]!;
@@ -285,138 +350,422 @@ public static class MessageHandle
                 List<int> buffs;
                 if (playerList3.Count != 0)
                 {
-                    // 在线
                     var plr = playerList3[0].TPlayer;
-                    buffs = plr.buffType.ToList();
-                    var invs = new NetItem[NetItem.MaxInventory];
-                    Item[] inventory = plr.inventory;
-                    Item[] armor = plr.armor;
-                    Item[] dye = plr.dye;
-                    Item[] miscEqups = plr.miscEquips;
-                    Item[] miscDyes = plr.miscDyes;
-                    Item[] piggy = plr.bank.item;
-                    Item[] safe = plr.bank2.item;
-                    Item[] forge = plr.bank3.item;
-                    Item[] voidVault = plr.bank4.item;
-                    var trash = plr.trashItem;
-                    Item[] loadout1Armor = plr.Loadouts[0].Armor;
-                    Item[] loadout1Dye = plr.Loadouts[0].Dye;
-                    Item[] loadout2Armor = plr.Loadouts[1].Armor;
-                    Item[] loadout2Dye = plr.Loadouts[1].Dye;
-                    Item[] loadout3Armor = plr.Loadouts[2].Armor;
-                    Item[] loadout3Dye = plr.Loadouts[2].Dye;
-                    for (var i = 0; i < NetItem.MaxInventory; i++)
+                    var msgs = new List<string>();
+                    // 在线
+                    msgs.Add($"玩家: {plr.name}");
+                    msgs.Add($"生命: {plr.statLife}/{plr.statLifeMax}");
+                    msgs.Add($"魔力: {plr.statMana}/{plr.statManaMax}");
+                    msgs.Add($"渔夫任务: {plr.anglerQuestsFinished} 次");
+
+                    List<string> enhance = new ();
+                    if (plr.extraAccessory)
                     {
-                        if (i < NetItem.InventoryIndex.Item2)
+                        enhance.Add(GetItemDesc(3335)); // 3335 恶魔之心
+                    }
+
+                    if (plr.unlockedBiomeTorches)
+                    {
+                        enhance.Add(GetItemDesc(5043)); // 5043 火把神徽章
+                    }
+
+                    if (plr.ateArtisanBread)
+                    {
+                        enhance.Add(GetItemDesc(5326)); // 5326	工匠面包
+                    }
+
+                    if (plr.usedAegisCrystal)
+                    {
+                        enhance.Add(GetItemDesc(5337)); // 5337 生命水晶	永久强化生命再生 
+                    }
+
+                    if (plr.usedAegisFruit)
+                    {
+                        enhance.Add(GetItemDesc(5338)); // 5338 埃癸斯果	永久提高防御力 
+                    }
+
+                    if (plr.usedArcaneCrystal)
+                    {
+                        enhance.Add(GetItemDesc(5339)); // 5339 奥术水晶	永久提高魔力再生 
+                    }
+
+                    if (plr.usedGalaxyPearl)
+                    {
+                        enhance.Add(GetItemDesc(5340)); // 5340	银河珍珠	永久增加运气 
+                    }
+
+                    if (plr.usedGummyWorm)
+                    {
+                        enhance.Add(GetItemDesc(5341)); // 5341	黏性蠕虫	永久提高钓鱼技能  
+                    }
+
+                    if (plr.usedAmbrosia)
+                    {
+                        enhance.Add(GetItemDesc(5342)); // 5342	珍馐	 永久提高采矿和建造速度 
+                    }
+
+                    if (plr.unlockedSuperCart)
+                    {
+                        enhance.Add(GetItemDesc(5289)); // 5289	矿车升级包
+                    }
+
+                    if (enhance.Count != 0)
+                    {
+                        msgs.Add("永久增强: " + string.Join(",", enhance));
+                    }
+                    else
+                    {
+                        msgs.Add("永久增强: " + "啥都没有...");
+                    }
+
+                    List<string> inventory = new ();
+                    List<string> assist = new ();
+                    List<string> armor = new ();
+                    List<string> vanity = new ();
+                    List<string> dye = new ();
+                    List<string> miscEquips = new ();
+                    List<string> miscDyes = new ();
+                    List<string> bank = new ();
+                    List<string> bank2 = new ();
+                    List<string> bank3 = new ();
+                    List<string> bank4 = new ();
+                    List<string> armor1 = new ();
+                    List<string> armor2 = new ();
+                    List<string> armor3 = new ();
+                    List<string> vanity1 = new ();
+                    List<string> vanity2 = new ();
+                    List<string> vanity3 = new ();
+                    List<string> dye1 = new ();
+                    List<string> dye2 = new ();
+                    List<string> dye3 = new ();
+
+                    string s;
+                    for (var i = 0; i < 59; i++)
+                    {
+                        s = GetItemDesc(plr.inventory[i].Clone());
+                        if (i < 50)
                         {
-                            //0-58
-                            invs[i] = (NetItem) inventory[i];
+                            if (s != "")
+                            {
+                                inventory.Add(s);
+                            }
                         }
-                        else if (i < NetItem.ArmorIndex.Item2)
+                        else if (i >= 50 && i < 59)
                         {
-                            //59-78
-                            var index = i - NetItem.ArmorIndex.Item1;
-                            invs[i] = (NetItem) armor[index];
-                        }
-                        else if (i < NetItem.DyeIndex.Item2)
-                        {
-                            //79-88
-                            var index = i - NetItem.DyeIndex.Item1;
-                            invs[i] = (NetItem) dye[index];
-                        }
-                        else if (i < NetItem.MiscEquipIndex.Item2)
-                        {
-                            //89-93
-                            var index = i - NetItem.MiscEquipIndex.Item1;
-                            invs[i] = (NetItem) miscEqups[index];
-                        }
-                        else if (i < NetItem.MiscDyeIndex.Item2)
-                        {
-                            //93-98
-                            var index = i - NetItem.MiscDyeIndex.Item1;
-                            invs[i] = (NetItem) miscDyes[index];
-                        }
-                        else if (i < NetItem.PiggyIndex.Item2)
-                        {
-                            //98-138
-                            var index = i - NetItem.PiggyIndex.Item1;
-                            invs[i] = (NetItem) piggy[index];
-                        }
-                        else if (i < NetItem.SafeIndex.Item2)
-                        {
-                            //138-178
-                            var index = i - NetItem.SafeIndex.Item1;
-                            invs[i] = (NetItem) safe[index];
-                        }
-                        else if (i < NetItem.TrashIndex.Item2)
-                        {
-                            //179-219
-                            invs[i] = (NetItem) trash;
-                        }
-                        else if (i < NetItem.ForgeIndex.Item2)
-                        {
-                            //220
-                            var index = i - NetItem.ForgeIndex.Item1;
-                            invs[i] = (NetItem) forge[index];
-                        }
-                        else if (i < NetItem.VoidIndex.Item2)
-                        {
-                            //220
-                            var index = i - NetItem.VoidIndex.Item1;
-                            invs[i] = (NetItem) voidVault[index];
-                        }
-                        else if (i < NetItem.Loadout1Armor.Item2)
-                        {
-                            var index = i - NetItem.Loadout1Armor.Item1;
-                            invs[i] = (NetItem) loadout1Armor[index];
-                        }
-                        else if (i < NetItem.Loadout1Dye.Item2)
-                        {
-                            var index = i - NetItem.Loadout1Dye.Item1;
-                            invs[i] = (NetItem) loadout1Dye[index];
-                        }
-                        else if (i < NetItem.Loadout2Armor.Item2)
-                        {
-                            var index = i - NetItem.Loadout2Armor.Item1;
-                            invs[i] = (NetItem) loadout2Armor[index];
-                        }
-                        else if (i < NetItem.Loadout2Dye.Item2)
-                        {
-                            var index = i - NetItem.Loadout2Dye.Item1;
-                            invs[i] = (NetItem) loadout2Dye[index];
-                        }
-                        else if (i < NetItem.Loadout3Armor.Item2)
-                        {
-                            var index = i - NetItem.Loadout3Armor.Item1;
-                            invs[i] = (NetItem) loadout3Armor[index];
-                        }
-                        else if (i < NetItem.Loadout3Dye.Item2)
-                        {
-                            var index = i - NetItem.Loadout3Dye.Item1;
-                            invs[i] = (NetItem) loadout3Dye[index];
+                            if (s != "")
+                            {
+                                assist.Add(s);
+                            }
                         }
                     }
 
-                    List<List<int>> itemList = new ();
-                    foreach (var i in invs)
+                    for (var i = 0; i < plr.armor.Length; i++)
                     {
-                        itemList.Add(new List<int> { i.NetId, i.Stack });
+                        s = GetItemDesc(plr.armor[i]);
+                        if (i < 10)
+                        {
+                            if (s != "")
+                            {
+                                armor.Add(s);
+                            }
+                        }
+                        else
+                        {
+                            if (s != "")
+                            {
+                                vanity.Add(s);
+                            }
+                        }
+                    }
+
+                    for (var i = 0; i < plr.dye.Length; i++)
+                    {
+                        s = GetItemDesc(plr.dye[i]);
+                        if (s != "")
+                        {
+                            dye.Add(s);
+                        }
+                    }
+
+                    for (var i = 0; i < plr.miscEquips.Length; i++)
+                    {
+                        s = GetItemDesc(plr.miscEquips[i]);
+                        if (s != "")
+                        {
+                            miscEquips.Add(s);
+                        }
+                    }
+
+                    for (var i = 0; i < plr.miscDyes.Length; i++)
+                    {
+                        s = GetItemDesc(plr.miscDyes[i]);
+                        if (s != "")
+                        {
+                            miscDyes.Add(s);
+                        }
+                    }
+
+                    for (var i = 0; i < plr.bank.item.Length; i++)
+                    {
+                        s = GetItemDesc(plr.bank.item[i]);
+                        if (s != "")
+                        {
+                            bank.Add(s);
+                        }
+                    }
+
+                    for (var i = 0; i < plr.bank2.item.Length; i++)
+                    {
+                        s = GetItemDesc(plr.bank2.item[i]);
+                        if (s != "")
+                        {
+                            bank2.Add(s);
+                        }
+                    }
+
+                    for (var i = 0; i < plr.bank3.item.Length; i++)
+                    {
+                        s = GetItemDesc(plr.bank3.item[i]);
+                        if (s != "")
+                        {
+                            bank3.Add(s);
+                        }
+                    }
+
+                    for (var i = 0; i < plr.bank4.item.Length; i++)
+                    {
+                        s = GetItemDesc(plr.bank4.item[i]);
+                        if (s != "")
+                        {
+                            bank4.Add(s);
+                        }
+                    }
+
+                    // 装备（loadout）
+                    for (var i = 0; i < plr.Loadouts.Length; i++)
+                    {
+                        Item[] items = plr.Loadouts[i].Armor;
+                        // 装备 和 时装
+                        for (var j = 0; j < items.Length; j++)
+                        {
+                            s = GetItemDesc(items[j]);
+                            if (!string.IsNullOrEmpty(s))
+                            {
+                                if (i == 0)
+                                {
+                                    if (j < 10)
+                                    {
+                                        armor1.Add(s);
+                                    }
+                                    else
+                                    {
+                                        vanity1.Add(s);
+                                    }
+                                }
+                                else if (i == 1)
+                                {
+                                    if (j < 10)
+                                    {
+                                        armor2.Add(s);
+                                    }
+                                    else
+                                    {
+                                        vanity2.Add(s);
+                                    }
+                                }
+                                else if (i == 2)
+                                {
+                                    if (j < 10)
+                                    {
+                                        armor3.Add(s);
+                                    }
+                                    else
+                                    {
+                                        vanity3.Add(s);
+                                    }
+                                }
+                            }
+                        }
+
+                        // 染料
+                        items = plr.Loadouts[i].Dye;
+                        for (var j = 0; j < items.Length; j++)
+                        {
+                            s = GetItemDesc(items[j]);
+                            if (!string.IsNullOrEmpty(s))
+                            {
+                                if (i == 0)
+                                {
+                                    dye1.Add(s);
+                                }
+                                else if (i == 1)
+                                {
+                                    dye2.Add(s);
+                                }
+                                else if (i == 2)
+                                {
+                                    dye3.Add(s);
+                                }
+                            }
+                        }
+                    }
+
+                    List<string> trash = new ();
+                    s = GetItemDesc(plr.trashItem);
+                    if (s != "")
+                    {
+                        trash.Add(s);
+                    }
+
+                    if (inventory.Count != 0)
+                    {
+                        msgs.Add("背包：" + string.Join(",", inventory));
+                    }
+                    else
+                    {
+                        msgs.Add("背包：啥都没有...");
+                    }
+
+                    if (trash.Count != 0)
+                    {
+                        msgs.Add("垃圾桶：" + string.Join(",", trash));
+                    }
+                    else
+                    {
+                        msgs.Add("垃圾桶：啥都没有...");
+                    }
+
+                    if (assist.Count != 0)
+                    {
+                        msgs.Add("钱币弹药：" + string.Join(",", assist));
+                    }
+
+
+                    var num = plr.CurrentLoadoutIndex + 1;
+
+                    if (armor.Count != 0)
+                    {
+                        msgs.Add($">装备{num}：" + string.Join(",", armor));
+                    }
+
+
+                    if (vanity.Count != 0)
+                    {
+                        msgs.Add($">时装{num}：" + string.Join(",", vanity));
+                    }
+
+
+                    if (dye.Count != 0)
+                    {
+                        msgs.Add($">染料{num}：" + string.Join(",", dye));
+                    }
+
+
+                    if (armor1.Count != 0)
+                    {
+                        msgs.Add("装备1：" + string.Join(",", armor1));
+                    }
+
+
+                    if (vanity1.Count != 0)
+                    {
+                        msgs.Add("时装1：" + string.Join(",", vanity1));
+                    }
+
+
+                    if (dye1.Count != 0)
+                    {
+                        msgs.Add("染料1：" + string.Join(",", dye1));
+                    }
+
+
+                    if (armor2.Count != 0)
+                    {
+                        msgs.Add("装备2：" + string.Join(",", armor2));
+                    }
+
+
+                    if (vanity2.Count != 0)
+                    {
+                        msgs.Add("时装2：" + string.Join(",", vanity2));
+                    }
+
+
+                    if (dye2.Count != 0)
+                    {
+                        msgs.Add("染料2：" + string.Join(",", dye2));
+                    }
+
+
+                    if (armor3.Count != 0)
+                    {
+                        msgs.Add("装备3：" + string.Join(",", armor3));
+                    }
+
+
+                    if (vanity3.Count != 0)
+                    {
+                        msgs.Add("时装3：" + string.Join(",", vanity3));
+                    }
+
+
+                    if (dye3.Count != 0)
+                    {
+                        msgs.Add("染料3：" + string.Join(",", dye3));
+                    }
+
+
+                    if (miscEquips.Count != 0)
+                    {
+                        msgs.Add("工具栏：" + string.Join(",", miscEquips));
+                    }
+
+
+                    if (miscDyes.Count != 0)
+                    {
+                        msgs.Add("染料2：" + string.Join(",", miscDyes));
+                    }
+
+
+                    if (bank.Count != 0)
+                    {
+                        msgs.Add("储蓄罐：" + string.Join(",", bank));
+                    }
+
+
+                    if (bank2.Count != 0)
+                    {
+                        msgs.Add("保险箱：" + string.Join(",", bank2));
+                    }
+
+
+                    if (bank3.Count != 0)
+                    {
+                        msgs.Add("护卫熔炉：" + string.Join(",", bank3));
+                    }
+
+
+                    if (bank4.Count != 0)
+                    {
+                        msgs.Add("虚空保险箱：" + string.Join(",", bank4));
                     }
 
                     result = new RestObject
                     {
-                        { "type", "lookbag" },
+                        { "type", "lookbag_text" },
                         { "name", name },
                         { "exist", 1 },
-                        { "inventory", itemList },
-                        { "buffs", buffs },
+                        // { "inventory", string.Join("\n", msgs) },
+                        { "inventory", string.Join("暂时无法使用") },
                         { "group", (long) jsonObject["group"]! }
                     };
-                    await SendDateAsync(JsonConvert.SerializeObject(result));
-                    return;
+                    //Console.WriteLine(string.Join("\n", msgs));
+                }
+                else
+                {
+                    result = new RestObject { { "type", "lookbag" }, { "exist", 0 }, { "group", (long) jsonObject["group"]! } };
                 }
 
-                result = new RestObject { { "type", "lookbag" }, { "exist", 0 }, { "group", (long) jsonObject["group"]! } };
                 await SendDateAsync(JsonConvert.SerializeObject(result));
                 break;
             case "pluginlist":

@@ -75,6 +75,9 @@ public class TSPlayer
     /// </summary>
     public static readonly TSPlayer All = new ("All");
 
+    // ReSharper disable once InconsistentNaming
+    public static readonly string[] UUIDs = new string[256];
+
 
     private readonly Item EmptySentinelItem = new ();
 
@@ -91,6 +94,7 @@ public class TSPlayer
     ///     Represents the ID of the chest that the player is viewing.
     /// </summary>
     public int ActiveChest = -1;
+
 
     /// <summary>
     ///     A list of command callbacks indexed by the command they need to do.
@@ -216,6 +220,8 @@ public class TSPlayer
 
     public bool SilentKickInProgress;
 
+    public bool SscLogin = false;
+
     public int sX = -1;
     public int sY = -1;
 
@@ -252,6 +258,8 @@ public class TSPlayer
     {
         this.Index = index;
         this.AwaitingResponse = new Dictionary<string, Action<object>>();
+        this.UUID = string.Empty;
+        this.IsLoggedIn = false;
     }
 
     /// <summary>
@@ -380,7 +388,11 @@ public class TSPlayer
     /// </summary>
     public bool Dead => this.TPlayer.dead;
 
-    public string UUID => Packet.UUIDs[this.Index];
+    public string UUID
+    {
+        get => UUIDs[this.Index];
+        set => UUIDs[this.Index] = value;
+    }
 
     /// <summary>
     ///     The players difficulty( normal[softcore], mediumcore, hardcore ).
@@ -721,7 +733,7 @@ public class TSPlayer
         this.SendWarningMessage("Your temporary group access has expired.");
 
         this.tempGroup = null!;
-        ((Timer)sender)?.Stop();
+        ((Timer) sender)?.Stop();
     }
 
     /// <summary>

@@ -11,8 +11,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Terraria;
-using Terraria.ID;
-using Terraria.Localization;
 using Terraria.ModLoader;
 using Config = CaiBotMod.Common.Config;
 
@@ -27,6 +25,7 @@ public class CaiBotMod : Mod
     public static CancellationToken Ct = TokenSource.Token;
     public static readonly Version? PluginVersion = ModLoader.GetMod("CaiBotMod").Version;
     public static readonly Dictionary<string, Point> PlayerDeath = new ();
+    public static readonly TSPlayer[] Players = new TSPlayer[256];
 
     public override void Load()
     {
@@ -34,7 +33,7 @@ public class CaiBotMod : Mod
         {
             return;
         }
-        
+
         Commands.ChatCommands.Add(new Command(this.TpNpc, "tpnpc", "tpn"));
         Commands.ChatCommands.Add(new Command(Home, "home", "spawn"));
         Commands.ChatCommands.Add(new Command(this.Who, "who", "online"));
@@ -46,7 +45,7 @@ public class CaiBotMod : Mod
         {
             GenCode();
         }
-        
+
         WebSocketTask = Task.Run(async () =>
         {
             while (true)
@@ -112,14 +111,15 @@ public class CaiBotMod : Mod
                     {
                         Console.WriteLine("链接失败原因: " + ex.Message);
                     }
+
                     Console.ResetColor();
                 }
 
                 await Task.Delay(TimeSpan.FromSeconds(5));
             }
-        },Ct);
+        }, Ct);
     }
-    
+
     public override void Unload()
     {
         if (!WebSocketTask.IsCompleted)
@@ -128,21 +128,7 @@ public class CaiBotMod : Mod
             TokenSource.Dispose();
         }
     }
-    
-    public static List<TSPlayer> Players
-    {
-        get
-        {
-            List<TSPlayer> players = new ();
-            var indexes = Netplay.Clients.Where(p => null != p).Select(p => p.Id);
-            foreach (var index in indexes)
-            {
-                players.Add(new TSPlayer(index));
-            }
 
-            return players;
-        }
-    }
 
     private static void Help(CommandArgs args)
     {
@@ -204,11 +190,11 @@ public class CaiBotMod : Mod
         Random rnd = new ();
         InitCode = rnd.Next(10000000, 99999999);
         Console.ForegroundColor = ConsoleColor.Green;
-        Console.Write($"[CaiBot]您的服务器绑定码为: ");
+        Console.Write("[CaiBot]您的服务器绑定码为: ");
         Console.ForegroundColor = ConsoleColor.Red;
         Console.WriteLine(InitCode);
         Console.ForegroundColor = ConsoleColor.Magenta;
-        Console.WriteLine($"*你可以在启动服务器后使用'/生成绑定码'重新生成");
+        Console.WriteLine("*你可以在启动服务器后使用'/生成绑定码'重新生成");
         Console.ResetColor();
     }
 
@@ -324,11 +310,4 @@ public class CaiBotMod : Mod
         args.Player.Teleport(target.position.X, target.position.Y);
         args.Player.SendSuccessMessage("[i:267]已传送到'{0}'附近.", target.FullName);
     }
-
-    public static void Kick(int index, string reason)
-    {
-        NetMessage.SendData(MessageID.Kick, index, -1, NetworkText.FromLiteral(reason));
-    }
-
-
 }

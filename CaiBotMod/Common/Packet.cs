@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Drawing;
 using System.IO;
-using System.Threading.Tasks;
+using System.Linq;
 using Terraria;
 using Terraria.Chat;
 using Terraria.DataStructures;
 using Terraria.GameContent.NetModules;
-using Terraria.ID;
-using Terraria.Localization;
 using Terraria.ModLoader;
 using Terraria.Net;
 
@@ -15,95 +13,94 @@ namespace CaiBotMod.Common;
 
 public class Packet : ModSystem
 {
-    public static readonly string[] UUIDs = new string[256];
-    public static readonly bool[] Login = new bool[256];
-
-    public override bool HijackSendData(int whoAmI, int msgType, int remoteClient, int ignoreClient, NetworkText text,
-        int number, float number2, float number3, float number4, int number5, int number6, int number7)
-    {
-        if (msgType == 2 && text.ToString() == Lang.mp[2].Value)
-        {
-            return true;
-        }
-
-        return false;
-    }
-
     public override bool HijackGetData(ref byte messageType, ref BinaryReader Reader, int playerNumber)
     {
-        BinaryReader reader = new (Reader.BaseStream);
         if (!Main.dedServ)
         {
             return false;
         }
 
+        BinaryReader reader = new (Reader.BaseStream);
+        var player = CaiBotMod.Players[playerNumber];
+
+
         switch (messageType)
         {
-            case 4:
-            {
-                
+            case 1:
+                CaiBotMod.Players[playerNumber] = new TSPlayer(playerNumber);
+                break;
+            case 6:
                 if (!Config.config.WhiteList)
                 {
                     return false;
                 }
-                
-                reader.ReadByte();
-                reader.ReadByte();
-                reader.ReadByte();
-                
-                var name = reader.ReadString().Trim();
-                
-                if (name.Length == 17)
+
+                break;
+            case 4:
+
+                if (!Config.config.WhiteList || !player.SscLogin || player.IsLoggedIn)
                 {
                     return false;
                 }
 
-                Task.Run(async () =>
+                reader.ReadByte();
+                reader.ReadByte();
+                reader.ReadByte();
+
+                var name = reader.ReadString().Trim();
+
+                RestObject re2 = new () { { "type", "whitelistV2" }, { "name", name }, { "uuid", player.UUID }, { "ip", player.IP } };
+                if (!MessageHandle.IsWebsocketConnected)
                 {
-
-                    var timeout = Task.Delay(1000); //貌似不是很优雅捏
-                    await Task.Run(async () =>
-                    {
-                        while ((Login[playerNumber] &&  UUIDs[playerNumber]!=null  && timeout.IsCompleted == false) || (UUIDs[playerNumber]==null && timeout.IsCompleted == false))
-                        {
-                            await Task.Delay(10);
-                        }
-
-                    });
-                    if (!Login[playerNumber] && timeout.IsCompleted)
-                    {
-                        NetMessage.SendData(MessageID.Kick, playerNumber, -1, NetworkText.FromLiteral("[CaiBot]UUID等待超时"));
-                        Netplay.Clients[playerNumber].Socket.Close();
-                        return true;
-                    }
-                    if (Login[playerNumber])
-                    {
-                        return false;
-                    }
-                    RestObject re = new ()
-                    {
-                        { "type", "whitelistV2" }, { "name", name }, { "uuid", UUIDs[playerNumber] }, { "ip", Netplay.Clients[playerNumber].Socket.GetRemoteAddress().ToString()! },
-                    };
-                    if (!MessageHandle.IsWebsocketConnected)
-                    {
-                        Console.WriteLine("[CaiBot]机器人处于未连接状态, 玩家无法加入。\n" +
-                                          "如果你不想使用Cai白名单，可以在tshock/CaiBot.json中将其关闭。");
-                        return true;
-                    }
-
-                    await MessageHandle.SendDateAsync(re.ToJson());
+                    Console.WriteLine("[CaiBot]机器人处于未连接状态, 玩家无法加入。\n" +
+                                      "如果你不想使用Cai白名单，可以在tshock/CaiBot.json中将其关闭。");
+                    player.Kick("[CaiBot]机器人处于未连接状态, 玩家无法加入。");
 
                     return false;
-                });
-                return false;
-            }
-            case 68:
-            {
-                UUIDs[playerNumber] = reader.ReadString();
-                Login[playerNumber] = false;
-                //Console.WriteLine($"[CaiBot]获取UUID:{UUIDs[playerNumber]}({playerNumber})");
+                }
+
+                _ = MessageHandle.SendDateAsync(re2.ToJson());
+
                 break;
-            }
+
+            case 68:
+                player.UUID = reader.ReadString();
+
+                if (!Config.config.WhiteList)
+                {
+                    return false;
+                }
+
+                if (ModLoader.Mods.Any(x => x.DisplayName == "SSC - 云存档") && player.Name.Length == 17 && long.TryParse(player.Name, out _))
+                {
+                    Netplay.Clients[player.Index].State = 2;
+                    NetMessage.SendData((int) PacketTypes.WorldInfo, player.Index);
+                    Main.SyncAnInvasion(player.Index);
+                    player.SscLogin = true;
+                    player.SendWarningMessage("[CaiBot]服务器已开启白名单,请使用已绑定的人物名字！");
+                    return false;
+                }
+
+                if (string.IsNullOrEmpty(player.Name))
+                {
+                    player.Kick("[Cai白名单]玩家名获取失败!");
+                    return false;
+                }
+
+                RestObject re = new () { { "type", "whitelistV2" }, { "name", player.Name }, { "uuid", player.UUID }, { "ip", player.IP } };
+                if (!MessageHandle.IsWebsocketConnected)
+                {
+                    Console.WriteLine("[CaiBot]机器人处于未连接状态, 玩家无法加入。\n" +
+                                      "如果你不想使用Cai白名单，可以在tshock/CaiBot.json中将其关闭。");
+                    player.Kick("[CaiBot]机器人处于未连接状态, 玩家无法加入。");
+
+                    return false;
+                }
+
+                _ = MessageHandle.SendDateAsync(re.ToJson());
+
+                break;
+
             case 82:
                 var moduleId = reader.ReadUInt16();
                 //LoadNetModule is now used for sending chat text.
@@ -112,7 +109,6 @@ public class Packet : ModSystem
                 {
                     //Then deserialize the message from the reader
                     var msg = ChatMessage.Deserialize(reader);
-                    TSPlayer player = new (playerNumber);
                     if (Commands.HandleCommand(player, msg.Text))
                     {
                         return true;
@@ -141,29 +137,6 @@ public class Packet : ModSystem
                 }
 
                 break;
-            }
-            case 217:
-            {
-                if (!string.IsNullOrEmpty(Config.config.Token))
-                {
-                    NetMessage.SendData(MessageID.Kick, playerNumber, -1, NetworkText.FromFormattable("exist"));
-                    return false;
-                }
-
-                var data = reader.ReadString();
-                var token = Guid.NewGuid().ToString();
-                if (data == CaiBotMod.InitCode.ToString())
-                {
-                    NetMessage.SendData(MessageID.Kick, playerNumber, -1, NetworkText.FromFormattable(token));
-                    Config.config.Token = token;
-                    Config.config.Write();
-                }
-                else
-                {
-                    NetMessage.SendData(MessageID.Kick, playerNumber, -1, NetworkText.FromFormattable("code"));
-                }
-
-                return true;
             }
         }
 
