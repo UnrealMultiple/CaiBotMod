@@ -32,9 +32,12 @@ public static class Login
                 {
                     Console.WriteLine($"[白名单]玩家[{name}](IP: {plr.IP})已通过白名单验证...");
                     plr.IsLoggedIn = true;
-                    Netplay.Clients[plr.Index].State = 2;
-                    NetMessage.SendData((int) PacketTypes.WorldInfo, plr.Index);
-                    Main.SyncAnInvasion(plr.Index);
+                    if (!plr.SscLogin)
+                    {
+                        Netplay.Clients[plr.Index].State = 2;
+                        NetMessage.SendData((int) PacketTypes.WorldInfo, plr.Index);
+                        Main.SyncAnInvasion(plr.Index);
+                    }
                     break;
                 }
                 case 404:
