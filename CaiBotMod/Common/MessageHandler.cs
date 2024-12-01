@@ -232,14 +232,18 @@ public static class MessageHandle
                     {
                         onlineProcess = bigBossList[^1].DisplayName + "前";
                     }
-                    for (var i = 0; i < bigBossList.Count; i++)
+                    else
                     {
-                        if (bigBossList[i].Downed())
+                        for (var i = 0; i < bigBossList.Count; i++)
                         {
-                            onlineProcess = bigBossList[i-1].DisplayName + "前";
-                            break;
+                            if (bigBossList[i].Downed())
+                            {
+                                onlineProcess = bigBossList[i-1].DisplayName + "前";
+                                break;
+                            }
                         }
                     }
+                    
                 }
                 
 
