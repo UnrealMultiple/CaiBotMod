@@ -18,14 +18,16 @@ namespace CaiBotMod;
 
 public class CaiBotMod : Mod
 {
-    public static int InitCode = -1;
+    private static int _initCode = -1;
     public static ClientWebSocket WebSocket = new ();
-    public static Task WebSocketTask = Task.CompletedTask;
-    public static readonly CancellationTokenSource TokenSource = new ();
-    public static CancellationToken Ct = TokenSource.Token;
+    private static Task _webSocketTask = Task.CompletedTask;
+    private static bool _stopWebSocket = false;
+    private static readonly CancellationTokenSource TokenSource = new ();
+    private static readonly CancellationToken Ct = TokenSource.Token;
     public static readonly Version? PluginVersion = ModLoader.GetMod("CaiBotMod").Version;
     public static readonly Dictionary<string, Point> PlayerDeath = new ();
     public static readonly TSPlayer[] Players = new TSPlayer[256];
+    
 
     public override void Load()
     {
@@ -46,9 +48,9 @@ public class CaiBotMod : Mod
             GenCode();
         }
 
-        WebSocketTask = Task.Run(async () =>
+        _webSocketTask = Task.Run(async () =>
         {
-            while (true)
+            while (!_stopWebSocket)
             {
                 try
                 {
@@ -58,7 +60,7 @@ public class CaiBotMod : Mod
                         HttpClient client = new ();
                         client.Timeout = TimeSpan.FromSeconds(5.0);
                         var response = client.GetAsync($"http://api.terraria.ink:22334/bot/get_token?" +
-                                                       $"code={InitCode}")
+                                                       $"code={_initCode}")
                             .Result;
                         if (response.StatusCode == HttpStatusCode.OK && Config.config.Token == "")
                         {
@@ -122,7 +124,9 @@ public class CaiBotMod : Mod
 
     public override void Unload()
     {
-        if (!WebSocketTask.IsCompleted)
+        _stopWebSocket = true;
+        WebSocket.Dispose();
+        if (!_webSocketTask.IsCompleted)
         {
             TokenSource.Cancel();
             TokenSource.Dispose();
@@ -188,11 +192,11 @@ public class CaiBotMod : Mod
         }
 
         Random rnd = new ();
-        InitCode = rnd.Next(10000000, 99999999);
+        _initCode = rnd.Next(10000000, 99999999);
         Console.ForegroundColor = ConsoleColor.Green;
         Console.Write("[CaiBot]您的服务器绑定码为: ");
         Console.ForegroundColor = ConsoleColor.Red;
-        Console.WriteLine(InitCode);
+        Console.WriteLine(_initCode);
         Console.ForegroundColor = ConsoleColor.Magenta;
         Console.WriteLine("*你可以在启动服务器后使用'/生成绑定码'重新生成");
         Console.ResetColor();

@@ -103,11 +103,8 @@ public class Packet : ModSystem
 
             case 82:
                 var moduleId = reader.ReadUInt16();
-                //LoadNetModule is now used for sending chat text.
-                //Read the module ID to determine if this is in fact the text module
                 if (moduleId == NetManager.Instance.GetId<NetTextModule>())
                 {
-                    //Then deserialize the message from the reader
                     var msg = ChatMessage.Deserialize(reader);
                     if (Commands.HandleCommand(player, msg.Text))
                     {
@@ -138,8 +135,28 @@ public class Packet : ModSystem
 
                 break;
             }
-        }
+            default:
+                if (messageType == 5 || messageType == 16 || messageType == 42 || messageType == 50 || messageType == 147|| messageType == 8 || messageType == 12)
+                {
+                    break;
+                }
 
+                if (messageType == 250)
+                {
+                    var id =   ModNet.NetModCount < 256 ? reader.ReadByte() : reader.ReadInt16();
+                    
+                    if (ModNet.GetMod(id)?.DisplayName == "SSC - 云存档")
+                    {
+                        break;
+                    }
+                }
+                // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+                if (player != null && player.SscLogin && !player.IsLoggedIn)
+                {
+                    return true;
+                }
+                break;
+        }
         return false;
     }
 }

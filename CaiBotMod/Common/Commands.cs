@@ -284,8 +284,8 @@ public static class Commands
                 return true;
             }
 
-            player.SendErrorMessage("无效的命令,输入/help获取命令列表.", Specifier);
-            return true;
+            //player.SendErrorMessage("无效的命令,输入/help获取命令列表.", Specifier);
+            return false;
         }
 
         foreach (var cmd in cmds)

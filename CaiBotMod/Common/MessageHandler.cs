@@ -32,6 +32,7 @@ public static class MessageHandle
             CancellationToken.None);
     }
 
+    # region Utils
     private static string FileToBase64String(string path)
     {
         FileStream fsForRead = new (path, FileMode.Open); //文件路径
@@ -41,7 +42,7 @@ public static class MessageHandle
             fsForRead.Seek(0, SeekOrigin.Begin);
             var bs = new byte[fsForRead.Length];
             var log = Convert.ToInt32(fsForRead.Length);
-            fsForRead.Read(bs, 0, log);
+            _ = fsForRead.Read(bs, 0, log);
             base64Str = Convert.ToBase64String(bs);
             return base64Str;
         }
@@ -82,9 +83,9 @@ public static class MessageHandle
     }
     
 
-    private static string GetItemDesc(int id, bool Tag = true)
+    private static string GetItemDesc(int id, bool isFlag = false)
     {
-        return Tag ? $"[i:{id}]" : $"[{Lang.GetItemNameValue(id)}]";
+        return isFlag ? $"[i:{id}]" : $"[{Lang.GetItemNameValue(id)}]";
     }
 
     private static string GetItemDesc(int id, string name, int stack, int prefix, bool isFlag = false)
@@ -127,6 +128,8 @@ public static class MessageHandle
 
         return $"[{s}]";
     }
+    
+    # endregion Utils
 
     public static async Task HandleMessageAsync(string receivedData)
     {
@@ -216,91 +219,29 @@ public static class MessageHandle
 
                     onlineResult += string.Join(',', players).TrimEnd(',');
                 }
-
-                List<string> onlineProcessList = new ();
-
-                #region 进度查询
-
-                if (!NPC.downedSlimeKing)
+                var bigBossList = BossCheckList.GetBossList().Where(x=>x.IsBoss && !x.IsMiniboss).OrderByDescending(x=>x.Progression).ToList();
+                var onlineProcess = "不可用";
+                if (bigBossList.Any())
                 {
-                    onlineProcessList.Add("史王");
-                }
-
-                if (!NPC.downedBoss1)
-                {
-                    onlineProcessList.Add("克眼");
-                }
-
-                if (!NPC.downedBoss2)
-                {
-                    if (Main.drunkWorld)
+                    if (bigBossList[0].Downed())
                     {
-                        onlineProcessList.Add("世吞/克脑");
+                        onlineProcess = "已毕业";
+                    
                     }
-                    else
+                    else if (!bigBossList[^1].Downed())
                     {
-                        if (WorldGen.crimson)
+                        onlineProcess = bigBossList[^1].DisplayName + "前";
+                    }
+                    for (var i = 0; i < bigBossList.Count; i++)
+                    {
+                        if (bigBossList[i].Downed())
                         {
-                            onlineProcessList.Add("克脑");
-                        }
-                        else
-                        {
-                            onlineProcessList.Add("世吞");
+                            onlineProcess = bigBossList[i-1].DisplayName + "前";
+                            break;
                         }
                     }
                 }
-
-                if (!NPC.downedBoss3)
-                {
-                    onlineProcessList.Add("骷髅王");
-                }
-
-                if (!Main.hardMode)
-                {
-                    onlineProcessList.Add("血肉墙");
-                }
-
-                if (!NPC.downedMechBoss2 || !NPC.downedMechBoss1 || !NPC.downedMechBoss3)
-                {
-                    if (Main.zenithWorld)
-                    {
-                        onlineProcessList.Add("美杜莎");
-                    }
-                    else
-                    {
-                        onlineProcessList.Add("新三王");
-                    }
-                }
-
-                if (!NPC.downedPlantBoss)
-                {
-                    onlineProcessList.Add("世花");
-                }
-
-                if (!NPC.downedGolemBoss)
-                {
-                    onlineProcessList.Add("石巨人");
-                }
-
-                if (!NPC.downedAncientCultist)
-                {
-                    onlineProcessList.Add("拜月教徒");
-                }
-
-                if (!NPC.downedTowers)
-                {
-                    onlineProcessList.Add("四柱");
-                }
-
-                if (!NPC.downedMoonlord)
-                {
-                    onlineProcessList.Add("月总");
-                }
-
-                string onlineProcess;
-                onlineProcess = !onlineProcessList.Any() ? "已毕业" : onlineProcessList.ElementAt(0) + "前";
-
-                #endregion
+                
 
                 result = new RestObject
                 {
@@ -313,15 +254,35 @@ public static class MessageHandle
                 await SendDateAsync(JsonConvert.SerializeObject(result));
                 break;
             case "process":
-                List<Dictionary<string, bool>> processList = new (
-                    [new Dictionary<string, bool> { { "King Slime", NPC.downedSlimeKing } }, new Dictionary<string, bool> { { "Eye of Cthulhu", NPC.downedBoss1 } }, new Dictionary<string, bool> { { "Eater of Worlds / Brain of Cthulhu", NPC.downedBoss2 } }, new Dictionary<string, bool> { { "Queen Bee", NPC.downedQueenBee } }, new Dictionary<string, bool> { { "Skeletron", NPC.downedBoss3 } }, new Dictionary<string, bool> { { "Deerclops", NPC.downedDeerclops } }, new Dictionary<string, bool> { { "Wall of Flesh", Main.hardMode } }, new Dictionary<string, bool> { { "Queen Slime", NPC.downedQueenSlime } }, new Dictionary<string, bool> { { "The Twins", NPC.downedMechBoss2 } }, new Dictionary<string, bool> { { "The Destroyer", NPC.downedMechBoss1 } }, new Dictionary<string, bool> { { "Skeletron Prime", NPC.downedMechBoss3 } }, new Dictionary<string, bool> { { "Plantera", NPC.downedPlantBoss } }, new Dictionary<string, bool> { { "Golem", NPC.downedGolemBoss } }, new Dictionary<string, bool> { { "Duke Fishron", NPC.downedFishron } }, new Dictionary<string, bool> { { "Empress of Light", NPC.downedEmpressOfLight } }, new Dictionary<string, bool> { { "Lunatic Cultist", NPC.downedAncientCultist } }, new Dictionary<string, bool> { { "Moon Lord", NPC.downedMoonlord } }, new Dictionary<string, bool> { { "Solar Pillar", NPC.downedTowerSolar } }, new Dictionary<string, bool> { { "Nebula Pillar", NPC.downedTowerNebula } }, new Dictionary<string, bool> { { "Vortex Pillar", NPC.downedTowerVortex } }, new Dictionary<string, bool> { { "Stardust Pillar", NPC.downedTowerStardust } }]);
-                result = new RestObject { { "type", "process" }, { "result", processList }, { "worldname", Main.worldName }, { "group", (long) jsonObject["group"]! } };
+                var bossList = BossCheckList.GetBossList().Where(x => x.IsBoss && !x.IsMiniboss).OrderBy(x => x.Progression).ToList();
+                var eventList = BossCheckList.GetBossList().Where(x => x.IsEvent || x.IsMiniboss).OrderBy(x => x.Progression).ToList();
+                if (!bossList.Any())
+                {
+                    result = new RestObject
+                    {
+                        { "type", "process_text" },
+                        { "process", "需要安装BossChecklist模组才能使用进度查询!" },
+                        { "group", (long) jsonObject["group"]! }
+                    };
+                    await SendDateAsync(JsonConvert.SerializeObject(result));
+                    break;
+                }
+                StringBuilder processResult = new ();
+                processResult.AppendLine("🖼️肉前:"+string.Join(',',bossList.Where(x => x.Progression<=7).Select(x=>$"{(x.Downed()?"\u2714":"\u2796")}{x.DisplayName}")));
+                processResult.AppendLine("🔥肉后:"+string.Join(',',bossList.Where(x => x.Progression>7).Select(x=>$"{(x.Downed()?"\u2714":"\u2796")}{x.DisplayName}")));
+                processResult.AppendLine("🚩事件:"+string.Join(',',eventList.Select(x=>$"{(x.Downed()?"\u2714":"\u2796")}{x.DisplayName}")));
+                result = new RestObject
+                {
+                    { "type", "process_text" },
+                    { "process", processResult.ToString() },
+                    { "group", (long) jsonObject["group"]! }
+                };
                 await SendDateAsync(JsonConvert.SerializeObject(result));
                 break;
             case "whitelist":
                 var name = (string) jsonObject["name"]!;
                 var code = (int) jsonObject["code"]!;
-                Login.CheckWhiteAsync(name, code);
+                Login.CheckWhite(name, code);
                 break;
             case "selfkick":
                 name = (string) jsonObject["name"]!;
@@ -339,7 +300,6 @@ public static class MessageHandle
             case "lookbag":
                 name = (string) jsonObject["name"]!;
                 var playerList3 = TSPlayer.FindByNameOrID("tsn:" + name);
-                List<int> buffs;
                 if (playerList3.Count != 0)
                 {
                     var plr = playerList3[0].TPlayer;
