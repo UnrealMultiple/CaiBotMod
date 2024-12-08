@@ -145,7 +145,7 @@ public class Packet : ModSystem
                 {
                     var id =   ModNet.NetModCount < 256 ? reader.ReadByte() : reader.ReadInt16();
                     
-                    if (ModNet.GetMod(id)?.DisplayName == "SSC - 云存档")
+                    if (ModNet.GetMod(id)?.DisplayName == "SSC - 云存档" || ModNet.GetMod(id)?.DisplayName == "HERO's Mod")
                     {
                         break;
                     }
