@@ -135,7 +135,7 @@ public class Packet : ModSystem
                 break;
             }
             default:
-                if (messageType is (byte) PacketTypes.PlayerSlot or (byte) PacketTypes.TileGetSection or (byte) PacketTypes.PlayerSpawn)
+                if (messageType is (byte) PacketTypes.PlayerSlot or (byte) PacketTypes.TileGetSection or (byte) PacketTypes.PlayerSpawn or (byte)PacketTypes.PlayerBuff)
                 {
                     break;
                 }
