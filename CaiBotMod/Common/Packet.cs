@@ -42,7 +42,6 @@ public class Packet : ModSystem
                 {
                     return false;
                 }
-
                 reader.ReadByte();
                 reader.ReadByte();
                 reader.ReadByte();
@@ -136,7 +135,7 @@ public class Packet : ModSystem
                 break;
             }
             default:
-                if (messageType == 5 || messageType == 16 || messageType == 42 || messageType == 50 || messageType == 147|| messageType == 8 || messageType == 12)
+                if (messageType is (byte) PacketTypes.PlayerSlot or (byte) PacketTypes.TileGetSection or (byte) PacketTypes.PlayerSpawn)
                 {
                     break;
                 }
@@ -144,14 +143,12 @@ public class Packet : ModSystem
                 if (messageType == 250)
                 {
                     var id =   ModNet.NetModCount < 256 ? reader.ReadByte() : reader.ReadInt16();
-                    
                     if (ModNet.GetMod(id)?.DisplayName == "SSC - 云存档" || ModNet.GetMod(id)?.DisplayName == "HERO's Mod")
                     {
                         break;
                     }
                 }
-                // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
-                if (player != null && player.SscLogin && !player.IsLoggedIn)
+                if (player is { SscLogin: true, IsLoggedIn: false })
                 {
                     return true;
                 }
