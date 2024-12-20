@@ -42,9 +42,6 @@ public class Packet : ModSystem
                 {
                     return false;
                 }
-                
-                player.SscLogin = false;
-                
                 reader.ReadByte();
                 reader.ReadByte();
                 reader.ReadByte();
