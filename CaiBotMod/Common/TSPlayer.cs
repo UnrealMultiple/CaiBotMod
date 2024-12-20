@@ -319,19 +319,6 @@ public class TSPlayer
     /// <summary>
     ///     The player's group.
     /// </summary>
-    public Group Group
-    {
-        get
-        {
-            if (this.tempGroup != null)
-            {
-                return this.tempGroup;
-            }
-
-            return this.group;
-        }
-        set => this.group = value;
-    }
 
     public bool ReceivedInfo { get; set; }
 
@@ -419,8 +406,7 @@ public class TSPlayer
     ///     Checks if the player is active and not pending termination.
     /// </summary>
     public bool ConnectionAlive =>
-        this.RealPlayer
-        && this.Client != null && this.Client.IsActive && !this.Client.PendingTermination;
+        this.RealPlayer && this.Client is { IsActive: true, PendingTermination: false };
 
     /// <summary>
     ///     Gets the item that the player is currently holding.
@@ -448,7 +434,7 @@ public class TSPlayer
             {
                 return this.CacheIP = (this.RealPlayer
                     ? this.Client.Socket.IsConnected()
-                        ? this.Client.Socket.GetRemoteAddress().ToString()
+                        ? this.Client.Socket.GetRemoteAddress().ToString()!.Split(':')[0]
                         : ""
                     : "127.0.0.1")!;
             }
@@ -1283,7 +1269,6 @@ public class TSRestPlayer : TSPlayer
 
     public TSRestPlayer(string playerName, Group playerGroup) : base(playerName)
     {
-        this.Group = playerGroup;
         this.AwaitingResponse = new Dictionary<string, Action<object>>();
     }
 
