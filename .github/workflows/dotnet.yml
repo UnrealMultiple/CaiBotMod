@@ -31,7 +31,7 @@ jobs:
         git config --global user.name 'github-actions'
         git config --global user.email 'github-actions@github.com'
         git add CaiBotMod/build.txt
-        git commit -m "自动更新版本号 v$date [skip ci]"
+        git commit -m "自动更新版本号 [skip ci]"
         git push
       continue-on-error: true
     
