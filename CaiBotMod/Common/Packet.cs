@@ -150,6 +150,7 @@ public class Packet : ModSystem
                 }
                 if (player is { SscLogin: true, IsLoggedIn: false })
                 {
+                    Console.WriteLine($"[CaiBot]处理数据包{messageType}(来自{player.Name})");
                     return true;
                 }
                 break;
