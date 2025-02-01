@@ -20,7 +20,6 @@ using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -109,17 +108,7 @@ public class TSPlayer
     public bool Confused = false;
 
     public string Country = "??";
-
-    /// <summary>
-    ///     Keeps track of recently created projectiles by this player. TShock.cs OnSecondUpdate() removes from this in an
-    ///     async task.
-    ///     Projectiles older than 5 seconds are purged from this collection as they are no longer "recent."
-    /// </summary>
-    /// <summary>
-    ///     The current region this player is in, or null if none.
-    /// </summary>
-    public Region CurrentRegion = null!;
-
+    
     /// <summary>
     ///     Contains data stored by plugins
     /// </summary>

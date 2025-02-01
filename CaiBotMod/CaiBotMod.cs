@@ -98,7 +98,7 @@ public class CaiBotMod : Mod
                             Console.WriteLine($"[CaiAPI]收到BOT数据包: {receivedData}");
                         }
 
-                        MessageHandle.HandleMessageAsync(receivedData);
+                        _ = MessageHandle.HandleMessageAsync(receivedData);
                     }
                 }
                 catch (Exception ex)
