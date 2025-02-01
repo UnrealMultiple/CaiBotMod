@@ -32,105 +32,6 @@ public static class MessageHandle
             CancellationToken.None);
     }
 
-    # region Utils
-    private static string FileToBase64String(string path)
-    {
-        FileStream fsForRead = new (path, FileMode.Open); //文件路径
-        var base64Str = "";
-        try
-        {
-            fsForRead.Seek(0, SeekOrigin.Begin);
-            var bs = new byte[fsForRead.Length];
-            var log = Convert.ToInt32(fsForRead.Length);
-            _ = fsForRead.Read(bs, 0, log);
-            base64Str = Convert.ToBase64String(bs);
-            return base64Str;
-        }
-        catch (Exception ex)
-        {
-            Console.Write(ex.Message);
-            Console.ReadLine();
-            return base64Str;
-        }
-        finally
-        {
-            fsForRead.Close();
-        }
-    }
-
-    public static string CompressBase64(string base64String)
-    {
-        var base64Bytes = Encoding.UTF8.GetBytes(base64String);
-        using (MemoryStream outputStream = new ())
-        {
-            using (GZipStream gzipStream = new (outputStream, CompressionMode.Compress))
-            {
-                gzipStream.Write(base64Bytes, 0, base64Bytes.Length);
-            }
-
-            return Convert.ToBase64String(outputStream.ToArray());
-        }
-    }
-
-    private static string GetItemDesc(Item item, bool isFlag = false)
-    {
-        if (item.netID == 0)
-        {
-            return "";
-        } 
-        return GetItemDesc(item.netID, item.Name, item.stack, item.prefix, isFlag);
-
-    }
-    
-
-    private static string GetItemDesc(int id, bool isFlag = false)
-    {
-        return isFlag ? $"[i:{id}]" : $"[{Lang.GetItemNameValue(id)}]";
-    }
-
-    private static string GetItemDesc(int id, string name, int stack, int prefix, bool isFlag = false)
-    {
-        if (isFlag)
-        {
-            // https://terraria.fandom.com/wiki/Chat
-            // [i:29]   数量
-            // [i/s10:29]   数量
-            // [i/p57:4]    词缀
-            // 控制台显示 物品名称
-            // 4.4.0 -1.4.1.2   [i:4444]
-            // 4.5.0 -1.4.2.2   [女巫扫帚]
-            //ChatItemIsIcon = TShock.VersionNum.CompareTo(new Version(4, 5, 0, 0)) >= 0;
-            //Console.WriteLine($"ChatItemIsIcon:");
-            if (stack > 1)
-            {
-                return $"[i/s{stack}:{id}]";
-            }
-
-            if (prefix.Equals(0))
-            {
-                return $"[i:{id}]";
-            }
-
-            return $"[i/p{prefix}:{id}]";
-        }
-
-        var s = name;
-        var prefixName = Lang.prefix[prefix].Value;
-        if (prefixName != "")
-        {
-            s = $"{prefixName}的 {s}";
-        }
-
-        if (stack > 1)
-        {
-            s = $"{s} ({stack})";
-        }
-
-        return $"[{s}]";
-    }
-    
-    # endregion Utils
-
     public static async Task HandleMessageAsync(string receivedData)
     {
         var jsonObject = JObject.Parse(receivedData);
@@ -199,7 +100,7 @@ public static class MessageHandle
                 break;
             case "online":
                 var onlineResult = "";
-                List<string> players = new ();
+                List<string> players = [];
                 if (!Main.player.Any(p => p is { active: true }))
                 {
                     onlineResult = "当前没有玩家在线捏";
@@ -314,55 +215,55 @@ public static class MessageHandle
                     msgs.Add($"魔力: {plr.statMana}/{plr.statManaMax}");
                     msgs.Add($"渔夫任务: {plr.anglerQuestsFinished} 次");
 
-                    List<string> enhance = new ();
+                    List<string> enhance = [];
                     if (plr.extraAccessory)
                     {
-                        enhance.Add(GetItemDesc(3335)); // 3335 恶魔之心
+                        enhance.Add(Utils.GetItemDesc(3335)); // 3335 恶魔之心
                     }
 
                     if (plr.unlockedBiomeTorches)
                     {
-                        enhance.Add(GetItemDesc(5043)); // 5043 火把神徽章
+                        enhance.Add(Utils.GetItemDesc(5043)); // 5043 火把神徽章
                     }
 
                     if (plr.ateArtisanBread)
                     {
-                        enhance.Add(GetItemDesc(5326)); // 5326	工匠面包
+                        enhance.Add(Utils.GetItemDesc(5326)); // 5326	工匠面包
                     }
 
                     if (plr.usedAegisCrystal)
                     {
-                        enhance.Add(GetItemDesc(5337)); // 5337 生命水晶	永久强化生命再生 
+                        enhance.Add(Utils.GetItemDesc(5337)); // 5337 生命水晶	永久强化生命再生 
                     }
 
                     if (plr.usedAegisFruit)
                     {
-                        enhance.Add(GetItemDesc(5338)); // 5338 埃癸斯果	永久提高防御力 
+                        enhance.Add(Utils.GetItemDesc(5338)); // 5338 埃癸斯果	永久提高防御力 
                     }
 
                     if (plr.usedArcaneCrystal)
                     {
-                        enhance.Add(GetItemDesc(5339)); // 5339 奥术水晶	永久提高魔力再生 
+                        enhance.Add(Utils.GetItemDesc(5339)); // 5339 奥术水晶	永久提高魔力再生 
                     }
 
                     if (plr.usedGalaxyPearl)
                     {
-                        enhance.Add(GetItemDesc(5340)); // 5340	银河珍珠	永久增加运气 
+                        enhance.Add(Utils.GetItemDesc(5340)); // 5340	银河珍珠	永久增加运气 
                     }
 
                     if (plr.usedGummyWorm)
                     {
-                        enhance.Add(GetItemDesc(5341)); // 5341	黏性蠕虫	永久提高钓鱼技能  
+                        enhance.Add(Utils.GetItemDesc(5341)); // 5341	黏性蠕虫	永久提高钓鱼技能  
                     }
 
                     if (plr.usedAmbrosia)
                     {
-                        enhance.Add(GetItemDesc(5342)); // 5342	珍馐	 永久提高采矿和建造速度 
+                        enhance.Add(Utils.GetItemDesc(5342)); // 5342	珍馐	 永久提高采矿和建造速度 
                     }
 
                     if (plr.unlockedSuperCart)
                     {
-                        enhance.Add(GetItemDesc(5289)); // 5289	矿车升级包
+                        enhance.Add(Utils.GetItemDesc(5289)); // 5289	矿车升级包
                     }
 
                     if (enhance.Count != 0)
@@ -374,31 +275,31 @@ public static class MessageHandle
                         msgs.Add("永久增强: " + "啥都没有...");
                     }
 
-                    List<string> inventory = new ();
-                    List<string> assist = new ();
-                    List<string> armor = new ();
-                    List<string> vanity = new ();
-                    List<string> dye = new ();
-                    List<string> miscEquips = new ();
-                    List<string> miscDyes = new ();
-                    List<string> bank = new ();
-                    List<string> bank2 = new ();
-                    List<string> bank3 = new ();
-                    List<string> bank4 = new ();
-                    List<string> armor1 = new ();
-                    List<string> armor2 = new ();
-                    List<string> armor3 = new ();
-                    List<string> vanity1 = new ();
-                    List<string> vanity2 = new ();
-                    List<string> vanity3 = new ();
-                    List<string> dye1 = new ();
-                    List<string> dye2 = new ();
-                    List<string> dye3 = new ();
+                    List<string> inventory = [];
+                    List<string> assist = [];
+                    List<string> armor = [];
+                    List<string> vanity = [];
+                    List<string> dye = [];
+                    List<string> miscEquips = [];
+                    List<string> miscDyes = [];
+                    List<string> bank = [];
+                    List<string> bank2 = [];
+                    List<string> bank3 = [];
+                    List<string> bank4 = [];
+                    List<string> armor1 = [];
+                    List<string> armor2 = [];
+                    List<string> armor3 = [];
+                    List<string> vanity1 = [];
+                    List<string> vanity2 = [];
+                    List<string> vanity3 = [];
+                    List<string> dye1 = [];
+                    List<string> dye2 = [];
+                    List<string> dye3 = [];
 
                     string s;
                     for (var i = 0; i < 59; i++)
                     {
-                        s = GetItemDesc(plr.inventory[i].Clone());
+                        s = Utils.GetItemDesc(plr.inventory[i].Clone());
                         if (i < 50)
                         {
                             if (s != "")
@@ -417,7 +318,7 @@ public static class MessageHandle
 
                     for (var i = 0; i < plr.armor.Length; i++)
                     {
-                        s = GetItemDesc(plr.armor[i]);
+                        s = Utils.GetItemDesc(plr.armor[i]);
                         if (i < 10)
                         {
                             if (s != "")
@@ -436,7 +337,7 @@ public static class MessageHandle
 
                     for (var i = 0; i < plr.dye.Length; i++)
                     {
-                        s = GetItemDesc(plr.dye[i]);
+                        s = Utils.GetItemDesc(plr.dye[i]);
                         if (s != "")
                         {
                             dye.Add(s);
@@ -445,7 +346,7 @@ public static class MessageHandle
 
                     for (var i = 0; i < plr.miscEquips.Length; i++)
                     {
-                        s = GetItemDesc(plr.miscEquips[i]);
+                        s = Utils.GetItemDesc(plr.miscEquips[i]);
                         if (s != "")
                         {
                             miscEquips.Add(s);
@@ -454,7 +355,7 @@ public static class MessageHandle
 
                     for (var i = 0; i < plr.miscDyes.Length; i++)
                     {
-                        s = GetItemDesc(plr.miscDyes[i]);
+                        s = Utils.GetItemDesc(plr.miscDyes[i]);
                         if (s != "")
                         {
                             miscDyes.Add(s);
@@ -463,7 +364,7 @@ public static class MessageHandle
 
                     for (var i = 0; i < plr.bank.item.Length; i++)
                     {
-                        s = GetItemDesc(plr.bank.item[i]);
+                        s = Utils.GetItemDesc(plr.bank.item[i]);
                         if (s != "")
                         {
                             bank.Add(s);
@@ -472,7 +373,7 @@ public static class MessageHandle
 
                     for (var i = 0; i < plr.bank2.item.Length; i++)
                     {
-                        s = GetItemDesc(plr.bank2.item[i]);
+                        s = Utils.GetItemDesc(plr.bank2.item[i]);
                         if (s != "")
                         {
                             bank2.Add(s);
@@ -481,7 +382,7 @@ public static class MessageHandle
 
                     for (var i = 0; i < plr.bank3.item.Length; i++)
                     {
-                        s = GetItemDesc(plr.bank3.item[i]);
+                        s = Utils.GetItemDesc(plr.bank3.item[i]);
                         if (s != "")
                         {
                             bank3.Add(s);
@@ -490,7 +391,7 @@ public static class MessageHandle
 
                     for (var i = 0; i < plr.bank4.item.Length; i++)
                     {
-                        s = GetItemDesc(plr.bank4.item[i]);
+                        s = Utils.GetItemDesc(plr.bank4.item[i]);
                         if (s != "")
                         {
                             bank4.Add(s);
@@ -504,7 +405,7 @@ public static class MessageHandle
                         // 装备 和 时装
                         for (var j = 0; j < items.Length; j++)
                         {
-                            s = GetItemDesc(items[j]);
+                            s = Utils.GetItemDesc(items[j]);
                             if (!string.IsNullOrEmpty(s))
                             {
                                 if (i == 0)
@@ -547,7 +448,7 @@ public static class MessageHandle
                         items = plr.Loadouts[i].Dye;
                         for (var j = 0; j < items.Length; j++)
                         {
-                            s = GetItemDesc(items[j]);
+                            s = Utils.GetItemDesc(items[j]);
                             if (!string.IsNullOrEmpty(s))
                             {
                                 if (i == 0)
@@ -566,8 +467,8 @@ public static class MessageHandle
                         }
                     }
 
-                    List<string> trash = new ();
-                    s = GetItemDesc(plr.trashItem);
+                    List<string> trash = [];
+                    s = Utils.GetItemDesc(plr.trashItem);
                     if (s != "")
                     {
                         trash.Add(s);
